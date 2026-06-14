@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShopCart</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛒</text></svg>">
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <header class="bg-white shadow-sm border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+      <h1 class="text-2xl font-bold text-gray-900">ShopCart</h1>
+      <button
+        data-testid="cart-toggle-btn"
+        class="relative p-2 text-gray-600 hover:text-gray-900 transition-colors cursor-pointer"
+        aria-label="Open cart"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
+        </svg>
+        <span
+          data-testid="cart-badge"
+          class="absolute -top-1 -right-1 bg-blue-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center hidden"
+        >0</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-8">
+    <h2 class="text-xl font-semibold text-gray-800 mb-6">Products</h2>
+    <div data-testid="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+  </main>
+
+  <div data-testid="cart-modal" class="fixed inset-0 z-50 hidden" aria-modal="true" role="dialog">
+    <div class="fixed inset-0 bg-black/50 transition-opacity" data-testid="cart-overlay"></div>
+
+    <div class="fixed inset-y-0 right-0 w-full max-w-lg bg-white shadow-xl flex flex-col">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+        <h2 class="text-lg font-semibold text-gray-900" data-testid="cart-modal-title">Your Cart</h2>
+        <button data-testid="cart-close-btn" class="text-gray-400 hover:text-gray-600 text-2xl leading-none cursor-pointer">&times;</button>
+      </div>
+
+      <div id="cart-body" class="flex-1 overflow-y-auto p-6">
+        <div data-testid="cart-empty" class="text-center text-gray-500 py-12">
+          <p class="text-lg">Your cart is empty</p>
+        </div>
+
+        <div id="cart-items-container" class="hidden"></div>
+      </div>
+
+      <div id="cart-footer" class="hidden border-t border-gray-200 px-6 py-4 space-y-3">
+        <div class="flex justify-between items-center text-lg font-semibold">
+          <span>Total:</span>
+          <span data-testid="cart-total-price" class="text-blue-600">$0.00</span>
+        </div>
+        <button data-testid="checkout-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-lg transition-colors cursor-pointer">
+          Proceed to Checkout
+        </button>
+      </div>
+
+      <div id="checkout-view" class="hidden flex-1 overflow-y-auto p-6">
+        <div data-testid="checkout-form">
+          <h3 data-testid="checkout-step-title" class="text-xl font-bold mb-4 text-gray-900"></h3>
+
+          <div id="checkout-step-shipping">
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                <input data-testid="shipping-name-input" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <p data-testid="shipping-name-error" class="text-red-500 text-sm mt-1 hidden"></p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                <input data-testid="shipping-address-input" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <p data-testid="shipping-address-error" class="text-red-500 text-sm mt-1 hidden"></p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">City</label>
+                <input data-testid="shipping-city-input" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <p data-testid="shipping-city-error" class="text-red-500 text-sm mt-1 hidden"></p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">ZIP Code</label>
+                <input data-testid="shipping-zip-input" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <p data-testid="shipping-zip-error" class="text-red-500 text-sm mt-1 hidden"></p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <input data-testid="shipping-email-input" type="email" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <p data-testid="shipping-email-error" class="text-red-500 text-sm mt-1 hidden"></p>
+              </div>
+              <div class="flex gap-3 pt-2">
+                <button data-testid="checkout-cancel-btn" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors cursor-pointer">Cancel</button>
+                <button data-testid="checkout-next-btn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors cursor-pointer">Next</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="checkout-step-payment" class="hidden">
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Card Number</label>
+                <input data-testid="payment-card-input" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <p data-testid="payment-card-error" class="text-red-500 text-sm mt-1 hidden"></p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Expiry (MM/YY)</label>
+                <input data-testid="payment-expiry-input" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <p data-testid="payment-expiry-error" class="text-red-500 text-sm mt-1 hidden"></p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">CVV</label>
+                <input data-testid="payment-cvv-input" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <p data-testid="payment-cvv-error" class="text-red-500 text-sm mt-1 hidden"></p>
+              </div>
+              <div class="flex gap-3 pt-2">
+                <button data-testid="checkout-back-btn" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors cursor-pointer">Back</button>
+                <button data-testid="checkout-submit-btn" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors cursor-pointer">Place Order</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="checkout-step-confirmation" class="hidden">
+            <div data-testid="order-success" class="text-center space-y-4 py-8">
+              <div class="text-5xl text-green-500">&#10003;</div>
+              <h4 class="text-2xl font-bold text-green-600">Order Confirmed!</h4>
+              <p data-testid="order-number" class="text-lg text-gray-600 font-mono"></p>
+              <p class="text-gray-500">Thank you for your purchase!</p>
+              <button data-testid="continue-shopping-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors cursor-pointer">Continue Shopping</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { getProducts, formatPrice } from './src/products.js';
+    import { addItem, removeItem, updateQuantity, getSubtotal, getItemCount } from './src/cart.js';
+    import { validateShippingInfo, validatePaymentInfo, processOrder } from './src/checkout.js';
+
+    let cart = [];
+
+    const grid = document.querySelector('[data-testid="product-grid"]');
+    const cartModal = document.querySelector('[data-testid="cart-modal"]');
+    const cartOverlay = document.querySelector('[data-testid="cart-overlay"]');
+    const cartToggle = document.querySelector('[data-testid="cart-toggle-btn"]');
+    const cartClose = document.querySelector('[data-testid="cart-close-btn"]');
+    const cartBadge = document.querySelector('[data-testid="cart-badge"]');
+    const cartBody = document.getElementById('cart-body');
+    const cartEmpty = document.querySelector('[data-testid="cart-empty"]');
+    const cartItemsContainer = document.getElementById('cart-items-container');
+    const cartFooter = document.getElementById('cart-footer');
+    const cartTotal = document.querySelector('[data-testid="cart-total-price"]');
+    const checkoutBtn = document.querySelector('[data-testid="checkout-btn"]');
+    const checkoutView = document.getElementById('checkout-view');
+    const checkoutForm = document.querySelector('[data-testid="checkout-form"]');
+    const checkoutStepTitle = document.querySelector('[data-testid="checkout-step-title"]');
+    const stepShipping = document.getElementById('checkout-step-shipping');
+    const stepPayment = document.getElementById('checkout-step-payment');
+    const stepConfirmation = document.getElementById('checkout-step-confirmation');
+
+    function updateBadge() {
+      const count = getItemCount(cart);
+      cartBadge.textContent = count;
+      cartBadge.classList.toggle('hidden', count === 0);
+    }
+
+    function renderCartItems() {
+      if (cart.length === 0) {
+        cartEmpty.classList.remove('hidden');
+        cartItemsContainer.classList.add('hidden');
+        cartFooter.classList.add('hidden');
+        return;
+      }
+
+      cartEmpty.classList.add('hidden');
+      cartItemsContainer.classList.remove('hidden');
+      cartFooter.classList.remove('hidden');
+
+      cartItemsContainer.innerHTML = cart.map((item) => `
+        <div data-testid="cart-item-${item.product.id}" class="flex items-center gap-4 py-4 border-b border-gray-100">
+          <img data-testid="cart-item-image-${item.product.id}" src="${item.product.image}" alt="${item.product.name}" class="w-16 h-16 object-cover rounded-lg" />
+          <div class="flex-1 min-w-0">
+            <h4 data-testid="cart-item-name-${item.product.id}" class="font-semibold text-gray-900 truncate">${item.product.name}</h4>
+            <p data-testid="cart-item-price-${item.product.id}" class="text-blue-600 font-bold">${formatPrice(item.product.price)}</p>
+          </div>
+          <div data-testid="cart-item-quantity-${item.product.id}" class="flex items-center gap-2">
+            <button data-testid="decrement-btn-${item.product.id}" data-id="${item.product.id}" class="cart-qty-btn w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 font-medium text-gray-600 cursor-pointer">-</button>
+            <span data-testid="item-quantity-${item.product.id}" class="w-6 text-center font-medium text-gray-900">${item.quantity}</span>
+            <button data-testid="increment-btn-${item.product.id}" data-id="${item.product.id}" class="cart-qty-btn w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 font-medium text-gray-600 cursor-pointer">+</button>
+          </div>
+          <button data-testid="remove-btn-${item.product.id}" data-id="${item.product.id}" class="cart-remove-btn text-red-400 hover:text-red-600 text-sm font-medium cursor-pointer">Remove</button>
+        </div>
+      `).join('');
+
+      cartTotal.textContent = formatPrice(getSubtotal(cart));
+
+      document.querySelectorAll('.cart-qty-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const id = Number(btn.dataset.id);
+          if (btn.textContent === '+') {
+            cart = addItem(cart, { id });
+          } else {
+            const item = cart.find((i) => i.product.id === id);
+            if (item) {
+              cart = updateQuantity(cart, id, item.quantity - 1);
+            }
+          }
+          renderCartItems();
+          updateBadge();
+        });
+      });
+
+      document.querySelectorAll('.cart-remove-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const id = Number(btn.dataset.id);
+          cart = removeItem(cart, id);
+          renderCartItems();
+          updateBadge();
+        });
+      });
+    }
+
+    function showCartView() {
+      checkoutView.classList.add('hidden');
+      cartBody.classList.remove('hidden');
+      cartFooter.classList.remove('hidden');
+      renderCartItems();
+    }
+
+    function showCheckoutView() {
+      cartBody.classList.add('hidden');
+      cartFooter.classList.add('hidden');
+      checkoutView.classList.remove('hidden');
+    }
+
+    function openCart() {
+      cartModal.classList.remove('hidden');
+      document.body.classList.add('overflow-hidden');
+      showCartView();
+    }
+
+    function closeCart() {
+      cartModal.classList.add('hidden');
+      document.body.classList.remove('overflow-hidden');
+      showCartView();
+    }
+
+    cartToggle.addEventListener('click', () => {
+      if (cartModal.classList.contains('hidden')) {
+        openCart();
+      } else {
+        closeCart();
+      }
+    });
+
+    cartClose.addEventListener('click', closeCart);
+    cartOverlay.addEventListener('click', closeCart);
+
+    checkoutBtn.addEventListener('click', () => {
+      showCheckoutView();
+      checkoutStepTitle.textContent = 'Shipping Info';
+      stepShipping.classList.remove('hidden');
+      stepPayment.classList.add('hidden');
+      stepConfirmation.classList.add('hidden');
+      clearErrors();
+    });
+
+    document.querySelector('[data-testid="checkout-cancel-btn"]').addEventListener('click', () => {
+      showCartView();
+    });
+
+    document.querySelector('[data-testid="checkout-next-btn"]').addEventListener('click', () => {
+      const data = {
+        name: document.querySelector('[data-testid="shipping-name-input"]').value,
+        address: document.querySelector('[data-testid="shipping-address-input"]').value,
+        city: document.querySelector('[data-testid="shipping-city-input"]').value,
+        zip: document.querySelector('[data-testid="shipping-zip-input"]').value,
+        email: document.querySelector('[data-testid="shipping-email-input"]').value,
+      };
+
+      const errors = validateShippingInfo(data);
+      clearErrors();
+
+      if (Object.keys(errors).length > 0) {
+        showErrors('shipping', errors);
+        return;
+      }
+
+      stepShipping.classList.add('hidden');
+      stepPayment.classList.remove('hidden');
+      checkoutStepTitle.textContent = 'Payment Info';
+      clearErrors();
+    });
+
+    document.querySelector('[data-testid="checkout-back-btn"]').addEventListener('click', () => {
+      stepPayment.classList.add('hidden');
+      stepShipping.classList.remove('hidden');
+      checkoutStepTitle.textContent = 'Shipping Info';
+      clearErrors();
+    });
+
+    document.querySelector('[data-testid="checkout-submit-btn"]').addEventListener('click', () => {
+      const data = {
+        cardNumber: document.querySelector('[data-testid="payment-card-input"]').value,
+        expiry: document.querySelector('[data-testid="payment-expiry-input"]').value,
+        cvv: document.querySelector('[data-testid="payment-cvv-input"]').value,
+      };
+
+      const errors = validatePaymentInfo(data);
+      clearErrors();
+
+      if (Object.keys(errors).length > 0) {
+        showErrors('payment', errors);
+        return;
+      }
+
+      const shippingData = {
+        name: document.querySelector('[data-testid="shipping-name-input"]').value,
+        address: document.querySelector('[data-testid="shipping-address-input"]').value,
+        city: document.querySelector('[data-testid="shipping-city-input"]').value,
+        zip: document.querySelector('[data-testid="shipping-zip-input"]').value,
+        email: document.querySelector('[data-testid="shipping-email-input"]').value,
+      };
+
+      const order = processOrder(cart, shippingData, data);
+
+      stepPayment.classList.add('hidden');
+      stepConfirmation.classList.remove('hidden');
+      checkoutStepTitle.textContent = 'Order Confirmed!';
+      document.querySelector('[data-testid="order-number"]').textContent = order.orderNumber;
+    });
+
+    document.querySelector('[data-testid="continue-shopping-btn"]').addEventListener('click', () => {
+      cart = [];
+      updateBadge();
+      closeCart();
+    });
+
+    function showErrors(prefix, errors) {
+      Object.keys(errors).forEach((key) => {
+        const el = document.querySelector(`[data-testid="${prefix}-${key}-error"]`);
+        if (el) {
+          el.textContent = errors[key];
+          el.classList.remove('hidden');
+        }
+      });
+    }
+
+    function clearErrors() {
+      document.querySelectorAll('[data-testid$="-error"]').forEach((el) => {
+        el.textContent = '';
+        el.classList.add('hidden');
+      });
+    }
+
+    function renderProducts() {
+      const products = getProducts();
+      grid.innerHTML = products.map((product) => `
+        <div
+          data-testid="product-card-${product.id}"
+          class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
+        >
+          <img
+            data-testid="product-image-${product.id}"
+            src="${product.image}"
+            alt="${product.name}"
+            class="w-full h-48 object-cover"
+            loading="lazy"
+          />
+          <div class="p-4 space-y-2">
+            <h3
+              data-testid="product-name-${product.id}"
+              class="text-lg font-semibold text-gray-900"
+            >${product.name}</h3>
+            <p class="text-sm text-gray-500">${product.description}</p>
+            <p
+              data-testid="product-price-${product.id}"
+              class="text-xl font-bold text-blue-600"
+            >${formatPrice(product.price)}</p>
+            <button
+              data-testid="add-to-cart-btn-${product.id}"
+              data-id="${product.id}"
+              class="add-to-cart-btn w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors cursor-pointer"
+            >
+              Add to Cart
+            </button>
+          </div>
+        </div>
+      `).join('');
+
+      document.querySelectorAll('.add-to-cart-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const id = Number(btn.dataset.id);
+          const product = products.find((p) => p.id === id);
+          if (product) {
+            cart = addItem(cart, product);
+            updateBadge();
+          }
+        });
+      });
+    }
+
+    renderProducts();
+  </script>
+</body>
+</html>

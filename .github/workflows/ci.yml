@@ -1,0 +1,86 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      products: ${{ steps.check.outputs.products }}
+      cart: ${{ steps.check.outputs.cart }}
+      checkout: ${{ steps.check.outputs.checkout }}
+      ui: ${{ steps.check.outputs.ui }}
+      config: ${{ steps.check.outputs.config }}
+      e2e: ${{ steps.check.outputs.e2e }}
+      e2e_files: ${{ steps.check.outputs.e2e_files }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/detect-changes
+        id: check
+        with:
+          base-ref: ${{ github.base_ref }}
+
+  products-unit:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.products == 'true' || needs.detect-changes.outputs.config == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx vitest run tests/unit/products.test.ts
+
+  cart-unit:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.cart == 'true' || needs.detect-changes.outputs.config == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx vitest run tests/unit/cart.test.ts
+
+  checkout-unit:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.checkout == 'true' || needs.detect-changes.outputs.config == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx vitest run tests/unit/checkout.test.ts
+
+  e2e-tests:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.e2e == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Install Playwright browsers
+        run: npx playwright install chromium
+      - name: Run Playwright tests
+        run: npx playwright test ${{ needs.detect-changes.outputs.e2e_files }}
+        env:
+          CI: true

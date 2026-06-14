@@ -1,0 +1,54 @@
+name: Detect Changes
+description: Detect which modules changed in a PR against the base branch.
+inputs:
+  base-ref:
+    description: Base branch ref (e.g. main)
+    required: true
+
+outputs:
+  products:
+    description: src/products.js or its test changed
+    value: ${{ steps.check.outputs.products }}
+  cart:
+    description: src/cart.js or its test changed
+    value: ${{ steps.check.outputs.cart }}
+  checkout:
+    description: src/checkout.js or its test changed
+    value: ${{ steps.check.outputs.checkout }}
+  ui:
+    description: index.html or Playwright test/config changed
+    value: ${{ steps.check.outputs.ui }}
+  config:
+    description: package.json or vitest.config.mjs changed
+    value: ${{ steps.check.outputs.config }}
+  e2e:
+    description: E2E spec files were changed
+    value: ${{ steps.check.outputs.e2e }}
+  e2e_files:
+    description: Changed E2E spec file paths (space-separated)
+    value: ${{ steps.check.outputs.e2e_files }}
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      id: check
+      run: |
+        BASE="${{ inputs.base-ref }}"
+        CHANGED=$(git diff --name-only "origin/${BASE}...HEAD" 2>/dev/null || echo "")
+
+        # Per-module unit test triggers
+        echo "products=$(echo "$CHANGED" | grep -qE '^src/products\.js$|^tests/unit/products\.test\.ts$' && echo true || echo false)" >> "$GITHUB_OUTPUT"
+        echo "cart=$(echo "$CHANGED" | grep -qE '^src/cart\.js$|^tests/unit/cart\.test\.ts$' && echo true || echo false)" >> "$GITHUB_OUTPUT"
+        echo "checkout=$(echo "$CHANGED" | grep -qE '^src/checkout\.js$|^tests/unit/checkout\.test\.ts$' && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
+        # UI / E2E test triggers
+        echo "ui=$(echo "$CHANGED" | grep -qE '^index\.html$|^tests/e2e/|^tests/component/|^playwright\.config\.ts$' && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
+        # Config triggers (runs everything)
+        echo "config=$(echo "$CHANGED" | grep -qE '^package\.json$|^vitest\.config\.js$' && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
+        # E2E runs only when E2E spec files themselves changed
+        E2E_FILES=$(echo "$CHANGED" | grep -E '^tests/e2e/.*\.spec\.ts$' | tr '\n' ' ')
+        echo "e2e_files=${E2E_FILES}" >> "$GITHUB_OUTPUT"
+        echo "e2e=$([ -n "${E2E_FILES// }" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"

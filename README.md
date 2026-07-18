@@ -2,7 +2,7 @@
 
 A fully interactive E-Commerce Shopping Cart single-page application built with vanilla JavaScript, Tailwind CSS, and TDD.
 
-**Live demo:** [https://your-username.github.io/web-playground](https://your-username.github.io/web-playground)
+**Live demo:** Deployed via GitHub Actions on push to `main` — see [.github/workflows/cd.yml](.github/workflows/cd.yml)
 
 ## Tech Stack
 
@@ -20,11 +20,17 @@ All interactive elements use `data-testid` attributes for test selectors — no 
 
 ```bash
 # Clone the repo
-git clone https://github.com/your-username/web-playground.git
+git clone https://github.com/<your-username>/web-playground.git
 cd web-playground
 
 # Install dependencies
 npm install
+
+# Build for production
+npm run build
+
+# Preview production build locally
+npm run build:preview
 
 # Start dev server
 npm run dev

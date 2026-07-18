@@ -8,7 +8,7 @@ A fully interactive E-Commerce Shopping Cart single-page application built with 
 
 | Layer | Technology |
 |-------|-----------|
-| UI | HTML, Tailwind CSS (CDN), vanilla JS |
+| UI | HTML, Tailwind CSS (v4, built with npm via Vite), vanilla JS |
 | State | In-memory + localStorage-ready patterns |
 | Unit Tests | Vitest (TypeScript) |
 | E2E / Component Tests | Playwright (TypeScript) |
@@ -30,7 +30,7 @@ npm install
 npm run build
 
 # Preview production build locally
-npm run build:preview
+npm run preview
 
 # Start dev server
 npm run dev

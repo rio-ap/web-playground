@@ -30,14 +30,23 @@ jobs:
       - name: Unit Tests
         run: npm test
 
+      - name: Unit Test Coverage
+        run: npm run coverage
+
       - name: Install Playwright
-        run: npx playwright install chromium
+        run: npx playwright install --with-deps
 
       - name: E2E Tests
         run: npx playwright test
 
       - name: Build
         run: npm run build
+
+      - name: Copy coverage to dist
+        run: mkdir -p dist/coverage && cp -r coverage/* dist/coverage/
+
+      - name: Copy test reports to dist
+        run: mkdir -p dist/test-reports && cp -r playwright-report/* dist/test-reports/
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

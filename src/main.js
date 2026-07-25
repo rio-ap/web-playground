@@ -53,7 +53,7 @@ function renderCartItems() {
         <span data-testid="item-quantity-${item.product.id}" class="w-6 text-center font-medium text-gray-900">${item.quantity}</span>
         <button data-testid="increment-btn-${item.product.id}" data-id="${item.product.id}" class="cart-qty-btn w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 font-medium text-gray-600 cursor-pointer">+</button>
       </div>
-      <button data-testid="remove-btn-${item.product.id}" data-id="${item.product.id}" class="cart-remove-btn text-red-400 hover:text-red-600 text-sm font-medium cursor-pointer">Remove</button>
+      <button data-testid="remove-btn-${item.product.id}" data-id="${item.product.id}" class="cart-remove-btn text-red-600 hover:text-red-700 text-sm font-medium cursor-pointer">Remove</button>
     </div>
   `).join('');
 

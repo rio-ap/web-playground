@@ -223,7 +223,7 @@ function renderProducts() {
   grid.innerHTML = products.map((product) => `
     <div
       data-testid="product-card-${product.id}"
-      class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
+      class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow flex flex-col h-full"
     >
       <img
         data-testid="product-image-${product.id}"
@@ -232,12 +232,12 @@ function renderProducts() {
         class="w-full h-48 object-cover"
         loading="lazy"
       />
-      <div class="p-4 space-y-2">
+      <div class="p-4 flex flex-col flex-1 gap-2">
         <h3
           data-testid="product-name-${product.id}"
           class="text-lg font-semibold text-gray-900"
         >${product.name}</h3>
-        <p class="text-sm text-gray-500">${product.description}</p>
+        <p class="text-sm text-gray-500 flex-1">${product.description}</p>
         <p
           data-testid="product-price-${product.id}"
           class="text-xl font-bold text-blue-600"

@@ -1,94 +1,113 @@
-import { test, expect } from '@playwright/test';
+import { test } from '@playwright/test';
+import { ProductGridPage } from './pages/ProductGridPage';
+import { CartModalPage } from './pages/CartModalPage';
 
 test.describe('Cart Flow', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    const products = new ProductGridPage(page);
+    await products.goto();
   });
 
   test('cart badge should be hidden when cart is empty', async ({ page }) => {
-    const badge = page.locator('[data-testid="cart-badge"]');
-    await expect(badge).toHaveClass(/hidden/);
+    const cart = new CartModalPage(page);
+    await cart.expectBadgeHidden();
   });
 
   test('adding a product should show badge with count 1', async ({ page }) => {
-    await page.locator('[data-testid="add-to-cart-btn-1"]').click();
-    const badge = page.locator('[data-testid="cart-badge"]');
-    await expect(badge).not.toHaveClass(/hidden/);
-    await expect(badge).toHaveText('1');
+    const products = new ProductGridPage(page);
+    const cart = new CartModalPage(page);
+    await products.addToCart(1);
+    await cart.expectBadgeCount(1);
   });
 
   test('adding same product twice should show count 2', async ({ page }) => {
-    await page.locator('[data-testid="add-to-cart-btn-1"]').click();
-    await page.locator('[data-testid="add-to-cart-btn-1"]').click();
-    await expect(page.locator('[data-testid="cart-badge"]')).toHaveText('2');
+    const products = new ProductGridPage(page);
+    const cart = new CartModalPage(page);
+    await products.addToCart(1);
+    await products.addToCart(1);
+    await cart.expectBadgeCount(2);
   });
 
   test('cart modal should open when toggle button is clicked', async ({ page }) => {
-    await page.locator('[data-testid="add-to-cart-btn-1"]').click();
-    await page.locator('[data-testid="cart-toggle-btn"]').click();
-    await expect(page.locator('[data-testid="cart-modal"]')).toBeVisible();
+    const products = new ProductGridPage(page);
+    const cart = new CartModalPage(page);
+    await products.addToCart(1);
+    await cart.open();
   });
 
   test('cart modal should display the added item', async ({ page }) => {
-    await page.locator('[data-testid="add-to-cart-btn-1"]').click();
-    await page.locator('[data-testid="cart-toggle-btn"]').click();
-    await expect(page.locator('[data-testid="cart-item-1"]')).toBeVisible();
-    await expect(page.locator('[data-testid="cart-item-name-1"]')).not.toBeEmpty();
-    await expect(page.locator('[data-testid="item-quantity-1"]')).toHaveText('1');
+    const products = new ProductGridPage(page);
+    const cart = new CartModalPage(page);
+    await products.addToCart(1);
+    await cart.open();
+    await cart.expectItemVisible(1);
+    await cart.expectItemQuantity(1, 1);
   });
 
   test('increment button should increase quantity in cart', async ({ page }) => {
-    await page.locator('[data-testid="add-to-cart-btn-1"]').click();
-    await page.locator('[data-testid="cart-toggle-btn"]').click();
-    await page.locator('[data-testid="increment-btn-1"]').click();
-    await expect(page.locator('[data-testid="item-quantity-1"]')).toHaveText('2');
+    const products = new ProductGridPage(page);
+    const cart = new CartModalPage(page);
+    await products.addToCart(1);
+    await cart.open();
+    await cart.incrementItem(1);
+    await cart.expectItemQuantity(1, 2);
   });
 
   test('decrement button should decrease quantity in cart', async ({ page }) => {
-    await page.locator('[data-testid="add-to-cart-btn-1"]').click();
-    await page.locator('[data-testid="add-to-cart-btn-1"]').click();
-    await page.locator('[data-testid="cart-toggle-btn"]').click();
-    await page.locator('[data-testid="decrement-btn-1"]').click();
-    await expect(page.locator('[data-testid="item-quantity-1"]')).toHaveText('1');
+    const products = new ProductGridPage(page);
+    const cart = new CartModalPage(page);
+    await products.addToCart(1);
+    await products.addToCart(1);
+    await cart.open();
+    await cart.decrementItem(1);
+    await cart.expectItemQuantity(1, 1);
   });
 
   test('removing all quantity should hide the cart item', async ({ page }) => {
-    await page.locator('[data-testid="add-to-cart-btn-1"]').click();
-    await page.locator('[data-testid="cart-toggle-btn"]').click();
-    await page.locator('[data-testid="decrement-btn-1"]').click();
-    await expect(page.locator('[data-testid="cart-item-1"]')).not.toBeVisible();
+    const products = new ProductGridPage(page);
+    const cart = new CartModalPage(page);
+    await products.addToCart(1);
+    await cart.open();
+    await cart.decrementItem(1);
+    await cart.expectItemNotVisible(1);
   });
 
   test('remove button should remove the item from cart', async ({ page }) => {
-    await page.locator('[data-testid="add-to-cart-btn-1"]').click();
-    await page.locator('[data-testid="cart-toggle-btn"]').click();
-    await page.locator('[data-testid="remove-btn-1"]').click();
-    await expect(page.locator('[data-testid="cart-item-1"]')).not.toBeVisible();
+    const products = new ProductGridPage(page);
+    const cart = new CartModalPage(page);
+    await products.addToCart(1);
+    await cart.open();
+    await cart.removeItem(1);
+    await cart.expectItemNotVisible(1);
   });
 
   test('cart modal close button should close the modal', async ({ page }) => {
-    await page.locator('[data-testid="add-to-cart-btn-1"]').click();
-    await page.locator('[data-testid="cart-toggle-btn"]').click();
-    await page.locator('[data-testid="cart-close-btn"]').click();
-    await expect(page.locator('[data-testid="cart-modal"]')).not.toBeVisible();
+    const products = new ProductGridPage(page);
+    const cart = new CartModalPage(page);
+    await products.addToCart(1);
+    await cart.open();
+    await cart.close();
   });
 
   test('subtotal should update when quantity changes', async ({ page }) => {
-    await page.locator('[data-testid="add-to-cart-btn-1"]').click();
-    await page.locator('[data-testid="cart-toggle-btn"]').click();
-    const originalTotal = await page.locator('[data-testid="cart-total-price"]').textContent();
-    await page.locator('[data-testid="increment-btn-1"]').click();
-    const newTotal = await page.locator('[data-testid="cart-total-price"]').textContent();
-    expect(newTotal).not.toBe(originalTotal);
+    const products = new ProductGridPage(page);
+    const cart = new CartModalPage(page);
+    await products.addToCart(1);
+    await cart.open();
+    const originalTotal = await cart.totalPrice.textContent();
+    await cart.incrementItem(1);
+    await cart.expectTotalNotEqual(originalTotal ?? '');
   });
 
   test('multiple products should appear in cart', async ({ page }) => {
-    await page.locator('[data-testid="add-to-cart-btn-1"]').click();
-    await page.locator('[data-testid="add-to-cart-btn-2"]').click();
-    await page.locator('[data-testid="add-to-cart-btn-3"]').click();
-    await page.locator('[data-testid="cart-toggle-btn"]').click();
-    await expect(page.locator('[data-testid="cart-item-1"]')).toBeVisible();
-    await expect(page.locator('[data-testid="cart-item-2"]')).toBeVisible();
-    await expect(page.locator('[data-testid="cart-item-3"]')).toBeVisible();
+    const products = new ProductGridPage(page);
+    const cart = new CartModalPage(page);
+    await products.addToCart(1);
+    await products.addToCart(2);
+    await products.addToCart(3);
+    await cart.open();
+    await cart.expectItemVisible(1);
+    await cart.expectItemVisible(2);
+    await cart.expectItemVisible(3);
   });
 });

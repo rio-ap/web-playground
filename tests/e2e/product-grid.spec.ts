@@ -1,53 +1,33 @@
-import { test, expect } from '@playwright/test';
+import { test } from '@playwright/test';
+import { ProductGridPage } from './pages/ProductGridPage';
 
 test.describe('Product Grid', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    const products = new ProductGridPage(page);
+    await products.goto();
   });
 
   test('should display the product grid section', async ({ page }) => {
-    const grid = page.locator('[data-testid="product-grid"]');
-    await expect(grid).toBeVisible();
+    const products = new ProductGridPage(page);
+    await products.expectVisible();
   });
 
   test('should display at least one product card', async ({ page }) => {
-    const cards = page.locator('[data-testid^="product-card-"]');
-    const count = await cards.count();
-    expect(count).toBeGreaterThan(0);
+    const products = new ProductGridPage(page);
+    await products.expectAtLeastOneProduct();
   });
 
   test('each product card should display name, price, image, and add-to-cart button', async ({ page }) => {
-    const cards = page.locator('[data-testid^="product-card-"]');
-    const count = await cards.count();
-    expect(count).toBeGreaterThan(0);
+    const products = new ProductGridPage(page);
+    const count = await products.getCardCount();
 
-    for (let i = 0; i < count; i++) {
-      const card = cards.nth(i);
-
-      await expect(
-        card.locator('[data-testid*="product-name"]')
-      ).toBeVisible();
-
-      await expect(
-        card.locator('[data-testid*="product-price"]')
-      ).toBeVisible();
-
-      await expect(
-        card.locator('[data-testid*="product-image"]')
-      ).toBeVisible();
-
-      await expect(
-        card.locator('[data-testid*="add-to-cart-btn"]')
-      ).toBeVisible();
+    for (let i = 1; i <= count; i++) {
+      await products.expectProductCardVisible(i);
     }
   });
 
   test('add-to-cart buttons should be enabled for every product', async ({ page }) => {
-    const buttons = page.locator('[data-testid*="add-to-cart-btn"]');
-    const count = await buttons.count();
-    expect(count).toBeGreaterThan(0);
-    for (let i = 0; i < count; i++) {
-      await expect(buttons.nth(i)).toBeEnabled();
-    }
+    const products = new ProductGridPage(page);
+    await products.expectAllAddToCartButtonsEnabled();
   });
 });

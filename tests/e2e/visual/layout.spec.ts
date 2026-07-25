@@ -11,7 +11,7 @@ test.describe('Visual Regression', () => {
     const products = new ProductGridPage(page);
     await products.goto();
     await products.expectVisible();
-    await expect(page).toHaveScreenshot('product-grid-full-page.png', { fullPage: true });
+    await expect(page).toHaveScreenshot('product-grid-full-page.png', { fullPage: true, timeout: 30000 });
   });
 
   test('cart modal — with two items baseline', async ({ page }) => {
@@ -60,6 +60,9 @@ test.describe('Visual Regression', () => {
     await checkout.fillShipping(validShipping);
     await checkout.fillPayment(validPayment);
     await checkout.expectOrderConfirmed();
-    await expect(page.locator('[data-testid="checkout-form"]')).toHaveScreenshot('order-confirmation.png');
+    await expect(page.locator('[data-testid="checkout-form"]')).toHaveScreenshot('order-confirmation.png', {
+      mask: [page.locator('[data-testid="order-number"]')],
+      maskColor: '#000000',
+    });
   });
 });

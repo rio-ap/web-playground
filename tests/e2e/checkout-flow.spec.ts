@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test } from '@playwright/test';
 import { ProductGridPage } from './pages/ProductGridPage';
 import { CartModalPage } from './pages/CartModalPage';
 import { CheckoutPage } from './pages/CheckoutPage';
@@ -26,8 +26,9 @@ test.describe('Checkout Flow', () => {
 
   test('should allow cancel back to cart from shipping', async ({ page }) => {
     const checkout = new CheckoutPage(page);
+    const cart = new CartModalPage(page);
     await checkout.cancel();
-    await expect(page.locator('[data-testid="cart-modal"]')).toBeVisible();
+    await cart.expectModalVisible();
   });
 
   test('should proceed to payment after valid shipping info', async ({ page }) => {

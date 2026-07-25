@@ -27,9 +27,6 @@ jobs:
           cache: npm
       - run: npm ci
 
-      - name: Unit Tests
-        run: npm test
-
       - name: Unit Test Coverage
         run: npm run coverage
 

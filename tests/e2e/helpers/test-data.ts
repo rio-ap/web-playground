@@ -13,11 +13,3 @@ export const validPayment: PaymentData = {
   expiry: '12/28',
   cvv: '123',
 };
-
-export const emptyShipping: ShippingData = {
-  name: '',
-  address: '',
-  city: '',
-  zip: '',
-  email: '',
-};

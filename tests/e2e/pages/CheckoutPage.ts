@@ -39,6 +39,7 @@ export class CheckoutPage {
   readonly cancelBtn: Locator;
   readonly continueShoppingBtn: Locator;
   readonly orderSuccess: Locator;
+  readonly orderNumber: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -65,6 +66,7 @@ export class CheckoutPage {
     this.cancelBtn = page.locator('[data-testid="checkout-cancel-btn"]');
     this.continueShoppingBtn = page.locator('[data-testid="continue-shopping-btn"]');
     this.orderSuccess = page.locator('[data-testid="order-success"]');
+    this.orderNumber = page.locator('[data-testid="order-number"]');
   }
 
   async fillShipping(data: ShippingData): Promise<void> {
@@ -130,6 +132,6 @@ export class CheckoutPage {
   async expectOrderConfirmed(): Promise<void> {
     await expect(this.stepTitle).toHaveText('Order Confirmed!');
     await expect(this.orderSuccess).toBeVisible();
-    await expect(this.page.locator('[data-testid="order-number"]')).not.toBeEmpty();
+    await expect(this.orderNumber).not.toBeEmpty();
   }
 }

@@ -81,6 +81,13 @@ test.describe('Cart Flow', () => {
     await cart.expectItemNotVisible(1);
   });
 
+  test('cart overlay click should close the modal', async ({ page }) => {
+    const products = new ProductGridPage(page);
+    const cart = new CartModalPage(page);
+    await products.addToCart(1);
+    await cart.open();
+    await cart.closeViaOverlay();
+  });
   test('cart modal close button should close the modal', async ({ page }) => {
     const products = new ProductGridPage(page);
     const cart = new CartModalPage(page);

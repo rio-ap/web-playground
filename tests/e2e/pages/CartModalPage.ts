@@ -42,6 +42,11 @@ export class CartModalPage {
 
   async checkout(): Promise<void> {
     await this.checkoutBtn.click();
+    await expect(this.page.locator('[data-testid="checkout-form"]')).toBeVisible();
+  }
+
+  async expectModalVisible(): Promise<void> {
+    await expect(this.modal).toBeVisible();
   }
 
   async expectBadgeHidden(): Promise<void> {

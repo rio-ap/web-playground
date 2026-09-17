@@ -20,7 +20,11 @@ test.describe('production build smoke', () => {
     await page.goto('/');
     await expect(page).toHaveURL(/\/web-playground\/$/);
 
-    await expect(page).toHaveTitle('ShopCart');
+    await expect(page).toHaveTitle('Trazire Mart');
+    await expect(page.locator('[data-testid="home-view"]')).toBeVisible();
+    await page.locator('[data-testid="start-shopping-btn"]').click();
+    await expect(page).toHaveURL(/#\/shop$/);
+
     await expect(page.locator('[data-testid^="product-card-"]')).toHaveCount(6);
 
     const images = page.locator('[data-testid^="product-image-"]');

@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { HomePage } from '../e2e/pages/HomePage';
 import { ProductGridPage } from '../e2e/pages/ProductGridPage';
 import { CartModalPage } from '../e2e/pages/CartModalPage';
 import { CheckoutPage } from '../e2e/pages/CheckoutPage';
@@ -8,7 +9,19 @@ import { validShipping } from '../e2e/helpers/test-data';
 test.describe('Accessibility Audits', () => {
   test.describe.configure({ mode: 'serial' });
 
-  test('homepage — no critical or serious a11y violations', { tag: '@products' }, async ({ page }) => {
+  test('home — no critical or serious a11y violations', { tag: '@home' }, async ({ page }) => {
+    const home = new HomePage(page);
+    await home.goto();
+    await home.expectWelcome();
+
+    const results = await new AxeBuilder({ page })
+      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+      .analyze();
+
+    expect(results.violations).toEqual([]);
+  });
+
+  test('shop catalog — no critical or serious a11y violations', { tag: '@shop' }, async ({ page }) => {
     const products = new ProductGridPage(page);
     await products.goto();
     await products.expectVisible();

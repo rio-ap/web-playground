@@ -1,7 +1,7 @@
 import { test } from '@playwright/test';
 import { ProductGridPage } from './pages/ProductGridPage';
 
-test.describe('Product Grid', { tag: '@products' }, () => {
+test.describe('Product Grid', { tag: '@shop' }, () => {
   test.beforeEach(async ({ page }) => {
     const products = new ProductGridPage(page);
     await products.goto();

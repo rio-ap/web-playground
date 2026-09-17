@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { HomePage } from '../pages/HomePage';
 import { ProductGridPage } from '../pages/ProductGridPage';
 import { CartModalPage } from '../pages/CartModalPage';
 import { CheckoutPage } from '../pages/CheckoutPage';
@@ -18,7 +19,14 @@ test.describe('Visual Regression', () => {
     });
   });
 
-  test('product grid — full page baseline', { tag: '@products' }, async ({ page }) => {
+  test('home — full page baseline', { tag: '@home' }, async ({ page }) => {
+    const home = new HomePage(page);
+    await home.goto();
+    await home.expectWelcome();
+    await expect(page).toHaveScreenshot('home.png', { fullPage: true, timeout: 30000 });
+  });
+
+  test('product grid — full page baseline', { tag: '@shop' }, async ({ page }) => {
     const products = new ProductGridPage(page);
     await products.goto();
     await products.expectVisible();

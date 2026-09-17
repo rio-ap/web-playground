@@ -53,7 +53,7 @@ Each layer exists because it catches something the others cannot:
 | Layer | Tool | Scope |
 |-------|------|-------|
 | Unit | Vitest | Cart math, checkout validation, payment/card helpers (`src/payment.js`), checkout drafts (`src/checkout-state.js`), product helpers, and view rendering. Coverage applies to pure modules and views; only `src/main.js`, `src/router.js` and `src/effects.js` are excluded as DOM/event-bound. Per-file thresholds: 90% statements/functions/lines, 80% branches |
-| Component | Playwright (`setContent`) | Isolated UI fragments without the full app (cart item, checkout form) |
+| Component | Playwright (`setContent`) | Self-contained markup fragments without the full app (cart item, checkout pages) |
 | E2E — home & shop | Playwright + Page Object Model | Landing page and catalog (`@home`, `@shop`) on Chromium, Firefox and WebKit |
 | E2E — cart & checkout | Playwright + Page Object Model | Cart drawer and routed checkout pages — address, payment, review, confirmation — plus route guards (`@cart`, `@checkout`) on all three browsers |
 | Accessibility | `@axe-core/playwright` (own config, chromium) | 7 audits: home, shop, cart drawer, and the four checkout pages — no critical or serious violations; runs as its own CI job |
@@ -65,7 +65,7 @@ Design decisions worth noting:
 - every spec is tagged by module (`@home`, `@shop`, `@cart`, `@checkout`) — that's what lets CI run a targeted slice for a PR instead of the whole suite
 - the smoke layer runs against the **built artefact**, not the dev server, so base-path and asset problems fail the pipeline before anything ships
 - visual baselines are font-sensitive, so the font stack is pinned rather than left to the system — otherwise the same page is 1017px tall locally and 977px on the runner
-- 110 unit tests (including the CI path-to-tag mapping), 159 Playwright runs across three browsers (53 each), plus 7 chromium a11y audits and 1 smoke test — fast enough to run on every PR
+- 110 unit tests (including the CI path-to-tag mapping), 162 Playwright runs across three browsers (54 each), plus 7 chromium a11y audits and 1 smoke test — fast enough to run on every PR
 
 ## CI/CD design
 

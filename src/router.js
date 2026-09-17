@@ -10,14 +10,14 @@ export function currentPath() {
 
 export function renderRoute() {
   const app = document.getElementById('app');
-  const path = currentPath();
-  const view = routes.get(path);
+  let path = currentPath();
 
-  if (!view) {
-    window.location.hash = '#/';
-    return;
+  if (!routes.has(path)) {
+    window.location.replace('#/');
+    path = '/';
   }
 
+  const view = routes.get(path);
   app.innerHTML = '';
   app.dataset.view = view.name;
   view.mount(app);

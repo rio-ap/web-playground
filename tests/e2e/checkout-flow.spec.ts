@@ -65,6 +65,19 @@ test.describe('Checkout Flow', { tag: '@checkout' }, () => {
     await expect(payment.expiryInput).toHaveValue('12/28');
   });
 
+  test('should accept an amex card through to review', async ({ page }) => {
+    const address = new CheckoutAddressPage(page);
+    const payment = new CheckoutPaymentPage(page);
+    const review = new CheckoutReviewPage(page);
+    await address.submit(validShipping);
+    await payment.cardInput.fill('378282246310005');
+    await payment.expiryInput.fill('12/28');
+    await payment.cvvInput.fill('1234');
+    await payment.review();
+
+    await expect(review.paymentBlock).toContainText('Amex ending 0005');
+  });
+
   test('should review the shipping, payment and item details', async ({ page }) => {
     const address = new CheckoutAddressPage(page);
     const payment = new CheckoutPaymentPage(page);

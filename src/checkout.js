@@ -1,4 +1,5 @@
 import { getSubtotal } from './cart.js';
+import { detectCardBrand, isCardNumberComplete } from './payment.js';
 
 export function validateShippingInfo(data) {
   const errors = {};
@@ -12,9 +13,12 @@ export function validateShippingInfo(data) {
 
 export function validatePaymentInfo(data) {
   const errors = {};
-  if (!data.cardNumber?.trim()) {
+  const cardNumber = (data.cardNumber ?? '').replace(/\s/g, '');
+  const brand = detectCardBrand(cardNumber);
+
+  if (!cardNumber) {
     errors.card = 'Card number is required';
-  } else if (!/^\d{16}$/.test(data.cardNumber.replace(/\s/g, ''))) {
+  } else if (!isCardNumberComplete(cardNumber, brand)) {
     errors.card = 'Invalid card number';
   }
 
@@ -26,7 +30,7 @@ export function validatePaymentInfo(data) {
 
   if (!data.cvv?.trim()) {
     errors.cvv = 'CVV is required';
-  } else if (!/^\d{3,4}$/.test(data.cvv)) {
+  } else if (!(brand === 'amex' ? /^\d{4}$/ : /^\d{3,4}$/).test(data.cvv)) {
     errors.cvv = 'Invalid CVV';
   }
 

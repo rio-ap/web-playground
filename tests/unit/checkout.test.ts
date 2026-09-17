@@ -65,6 +65,31 @@ describe('validatePaymentInfo', () => {
     expect(errors.card).toBeDefined();
   });
 
+  it('should accept a 15-digit amex number with a 4-digit CVV', () => {
+    const errors = validatePaymentInfo({ cardNumber: '378282246310005', expiry: '12/28', cvv: '1234' });
+    expect(errors).toEqual({});
+  });
+
+  it('should accept a formatted amex number', () => {
+    const errors = validatePaymentInfo({ cardNumber: '3782 822463 10005', expiry: '12/28', cvv: '1234' });
+    expect(errors).toEqual({});
+  });
+
+  it('should reject an amex number that is not 15 digits', () => {
+    const errors = validatePaymentInfo({ cardNumber: '3782822463100055', expiry: '12/28', cvv: '1234' });
+    expect(errors.card).toBeDefined();
+  });
+
+  it('should reject a 15-digit number that is not amex', () => {
+    const errors = validatePaymentInfo({ cardNumber: '411111111111111', expiry: '12/28', cvv: '123' });
+    expect(errors.card).toBeDefined();
+  });
+
+  it('should reject a 3-digit CVV for amex', () => {
+    const errors = validatePaymentInfo({ cardNumber: '378282246310005', expiry: '12/28', cvv: '123' });
+    expect(errors.cvv).toBeDefined();
+  });
+
   it('should reject invalid expiry format', () => {
     const errors = validatePaymentInfo({ cardNumber: '4111111111111111', expiry: '12-28', cvv: '123' });
     expect(errors.expiry).toBeDefined();

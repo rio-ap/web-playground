@@ -4,7 +4,6 @@ test.describe('Cart Item Component', () => {
   test('should render product name, price, quantity, and action buttons', async ({ page }) => {
     await page.setContent(`
       <div data-testid="cart-item-1" class="flex items-center gap-4 p-4 border-b">
-        <img data-testid="cart-item-image-1" src="https://placehold.co/80x80" alt="" class="w-16 h-16 object-cover rounded" />
         <div class="flex-1">
           <h4 data-testid="cart-item-name-1" class="font-semibold">Wireless Headphones</h4>
           <p data-testid="cart-item-price-1" class="text-blue-600 font-bold">$79.99</p>

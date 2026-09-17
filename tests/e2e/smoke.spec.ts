@@ -18,6 +18,7 @@ test.describe('production build smoke', () => {
     });
 
     await page.goto('/');
+    await expect(page).toHaveURL(/\/web-playground\/$/);
 
     await expect(page).toHaveTitle('ShopCart');
     await expect(page.locator('[data-testid^="product-card-"]')).toHaveCount(6);

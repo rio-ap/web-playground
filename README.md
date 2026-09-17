@@ -19,7 +19,7 @@ I built this as a target for front-end automation practice, and as a place to pu
 - No CDNs or third-party requests. Product images, favicon, and the OG image are all local
 - Simulated payments: card formatting, brand detection, a `TEST MODE` label, and copy that says nothing is charged
 
-Routes are hash-based: `#/`, `#/shop`, `#/checkout/address`, `#/checkout/payment`, `#/checkout/review`, `#/confirmation`. The cart is a drawer that works from any screen. Only checkout is routed, and each route has a guard, so you can't deep-link past a step.
+Routes are hash-based: `#/`, `#/shop`, `#/checkout/address`, `#/checkout/payment`, `#/checkout/review`, `#/confirmation`. The cart is a drawer that works from any screen. Only the checkout flow is step-routed, and each step has a guard, so you can't deep-link past one.
 
 ## Practising against it
 
@@ -77,6 +77,7 @@ flowchart TD
   DC --> U["unit jobs<br/>only for changed modules"]
   DC --> E["e2e + visual<br/>chromium · firefox · webkit<br/>--grep module tags"]
   DC --> A["a11y audit<br/>chromium"]
+  DC --> SM["production smoke<br/>build + vite preview"]
   PR --> C["coverage<br/>per-file thresholds"]
 ```
 
@@ -84,7 +85,7 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-  M([Push to main]) --> C["coverage +<br/>per-file thresholds"] --> E["playwright<br/>3 browsers"] --> A["a11y<br/>chromium"] --> B["vite build"] --> S["production smoke<br/>vite preview"] --> D["deploy to<br/>GitHub Pages"] --> R["publish coverage +<br/>Playwright reports"]
+  M([Push to main]) --> C["coverage +<br/>per-file thresholds"] --> E["playwright<br/>3 browsers"] --> A["a11y<br/>chromium"] --> B["vite build"] --> R["copy coverage +<br/>Playwright reports into dist"] --> S["production smoke<br/>vite preview"] --> D["deploy to<br/>GitHub Pages"]
 ```
 
 A few details worth knowing:
@@ -102,7 +103,7 @@ What a PR actually runs:
 | `src/products.js` | `products-unit` | `@home` and `@shop`, since both render product data |
 | `src/payment.js` | none (coverage still runs every unit test) | `@checkout` |
 | `package.json` | all three unit jobs | everything |
-| `README.md` | none | E2E and a11y skipped; coverage still runs |
+| `README.md` | none | E2E, a11y and smoke skipped; coverage still runs |
 
 Workflows: [ci.yml](.github/workflows/ci.yml) · [cd.yml](.github/workflows/cd.yml)
 

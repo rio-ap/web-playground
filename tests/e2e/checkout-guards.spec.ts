@@ -2,7 +2,10 @@ import { test, expect, type Page } from '@playwright/test';
 import { ProductGridPage } from './pages/ProductGridPage';
 import { CartModalPage } from './pages/CartModalPage';
 import { CheckoutAddressPage } from './pages/CheckoutAddressPage';
-import { validShipping } from './helpers/test-data';
+import { CheckoutPaymentPage } from './pages/CheckoutPaymentPage';
+import { CheckoutReviewPage } from './pages/CheckoutReviewPage';
+import { ConfirmationPage } from './pages/ConfirmationPage';
+import { validShipping, validPayment } from './helpers/test-data';
 
 const setHash = (page: Page, hash: string) =>
   page.evaluate((value) => {
@@ -62,5 +65,50 @@ test.describe('Checkout Route Guards', { tag: '@checkout' }, () => {
     await page.goto('/#/confirmation');
 
     await expect(page).toHaveURL(/#\/$/);
+  });
+
+  test('should require the address step again for a new checkout after ordering', async ({ page }) => {
+    const products = new ProductGridPage(page);
+    const cart = new CartModalPage(page);
+    const address = new CheckoutAddressPage(page);
+    const payment = new CheckoutPaymentPage(page);
+    const review = new CheckoutReviewPage(page);
+    const confirmation = new ConfirmationPage(page);
+    await products.goto();
+    await products.addToCart(1);
+    await cart.open();
+    await cart.checkout();
+    await address.submit(validShipping);
+    await payment.submit(validPayment);
+    await review.placeOrder();
+    await confirmation.expectConfirmed();
+
+    await setHash(page, '#/shop');
+    await products.addToCart(2);
+    await setHash(page, '#/checkout/review');
+
+    await expect(page).toHaveURL(/#\/checkout\/address$/);
+    await address.expectVisible();
+  });
+
+  test('should return to the shop when placing an order with an empty cart', async ({ page }) => {
+    const products = new ProductGridPage(page);
+    const cart = new CartModalPage(page);
+    const address = new CheckoutAddressPage(page);
+    const payment = new CheckoutPaymentPage(page);
+    const review = new CheckoutReviewPage(page);
+    await products.goto();
+    await products.addToCart(1);
+    await cart.open();
+    await cart.checkout();
+    await address.submit(validShipping);
+    await payment.submit(validPayment);
+
+    await cart.open();
+    await cart.removeItem(1);
+    await cart.close();
+    await review.placeOrderBtn.click();
+
+    await expect(page).toHaveURL(/#\/shop$/);
   });
 });

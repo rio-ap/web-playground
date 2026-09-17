@@ -8,6 +8,7 @@ import {
   getPayment,
   setLastOrder,
   getLastOrder,
+  clearDraft,
 } from './checkout-state.js';
 import { detectCardBrand, formatCardNumber, formatExpiry } from './payment.js';
 import { bumpCart, flyToCart, showToast } from './effects.js';
@@ -188,8 +189,13 @@ function handleCheckoutAction(action) {
   }
 
   if (action === 'place-order') {
+    if (cart.length === 0) {
+      window.location.replace('#/shop');
+      return;
+    }
     const order = processOrder(cart, getShipping(), getPayment());
     setLastOrder(order);
+    clearDraft();
     cart = [];
     updateBadge();
     closeCart();

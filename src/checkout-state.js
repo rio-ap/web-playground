@@ -26,6 +26,11 @@ export function getLastOrder() {
   return lastOrder;
 }
 
+export function clearDraft() {
+  shipping = null;
+  payment = null;
+}
+
 export function reset() {
   shipping = null;
   payment = null;

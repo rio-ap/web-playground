@@ -6,6 +6,7 @@ import {
   getPayment,
   setLastOrder,
   getLastOrder,
+  clearDraft,
   reset,
 } from '../../src/checkout-state';
 
@@ -59,5 +60,17 @@ describe('checkout-state', () => {
     expect(getShipping()).toBeNull();
     expect(getPayment()).toBeNull();
     expect(getLastOrder()).toBeNull();
+  });
+
+  it('clears shipping and payment but keeps the last order for a new checkout', () => {
+    setShipping(shipping);
+    setPayment(payment);
+    setLastOrder(order);
+
+    clearDraft();
+
+    expect(getShipping()).toBeNull();
+    expect(getPayment()).toBeNull();
+    expect(getLastOrder()).toEqual(order);
   });
 });

@@ -1,5 +1,19 @@
 import { describe, it, expect } from 'vitest';
+import { existsSync } from 'node:fs';
+import { join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { getProducts, formatPrice } from '../../src/products';
+
+const PUBLIC_DIR = resolve(fileURLToPath(new URL('../../public', import.meta.url)));
+
+const PLACEHOLDER_FILES: Record<number, string> = {
+  1: 'headphones.svg',
+  2: 'smart-watch.svg',
+  3: 'usb-c-hub.svg',
+  4: 'keyboard.svg',
+  5: 'speaker.svg',
+  6: 'laptop-stand.svg',
+};
 
 describe('getProducts', () => {
   it('should return an array', () => {
@@ -27,6 +41,19 @@ describe('getProducts', () => {
     const products = getProducts();
     const ids = products.map((p) => p.id);
     expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it('each product should reference a bundled local placeholder that exists on disk', () => {
+    const base = import.meta.env.BASE_URL;
+    for (const product of getProducts()) {
+      const filename = PLACEHOLDER_FILES[product.id];
+      expect(filename, `no placeholder mapping for product ${product.id}`).toBeDefined();
+      expect(product.image).toBe(`${base}placeholders/${filename}`);
+      expect(
+        existsSync(join(PUBLIC_DIR, 'placeholders', filename)),
+        `missing public/placeholders/${filename}`
+      ).toBe(true);
+    }
   });
 
   it('each product should have a positive price', () => {

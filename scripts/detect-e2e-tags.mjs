@@ -6,7 +6,11 @@ export const ALL_TAGS = ['@home', '@shop', '@cart', '@checkout'];
 const MODULE_RULES = [
   {
     tag: '@home',
-    patterns: [/^src\/views\/home\.js$/, /^tests\/e2e\/home\.spec\.ts$/],
+    patterns: [
+      /^src\/products\.js$/,
+      /^src\/views\/home\.js$/,
+      /^tests\/e2e\/home\.spec\.ts$/,
+    ],
   },
   {
     tag: '@shop',

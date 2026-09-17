@@ -4,7 +4,7 @@ import { tagsForPaths, ALL_TAGS } from '../../scripts/detect-e2e-tags.mjs';
 
 describe('tagsForPaths', () => {
   it('maps a single module source file to its tag', () => {
-    expect(tagsForPaths(['src/products.js'])).toEqual(['@shop']);
+    expect(tagsForPaths(['src/products.js'])).toEqual(['@home', '@shop']);
     expect(tagsForPaths(['src/cart.js'])).toEqual(['@cart']);
     expect(tagsForPaths(['src/checkout.js'])).toEqual(['@checkout']);
   });

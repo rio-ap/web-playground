@@ -18,11 +18,14 @@ jobs:
       ui: ${{ steps.check.outputs.ui }}
       config: ${{ steps.check.outputs.config }}
       e2e: ${{ steps.check.outputs.e2e }}
-      e2e_files: ${{ steps.check.outputs.e2e_files }}
+      e2e_tags: ${{ steps.check.outputs.e2e_tags }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
       - uses: ./.github/actions/detect-changes
         id: check
         with:
@@ -85,7 +88,7 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps ${{ matrix.browser }}
       - name: Run Playwright tests
-        run: npx playwright test --project=${{ matrix.browser }} ${{ needs.detect-changes.outputs.e2e_files }}
+        run: npx playwright test --project=${{ matrix.browser }} --grep "${{ needs.detect-changes.outputs.e2e_tags }}"
         env:
           CI: true
       - name: Upload Playwright report

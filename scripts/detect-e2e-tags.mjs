@@ -39,6 +39,7 @@ const MODULE_RULES = [
       /^src\/views\/confirmation\.js$/,
       /^tests\/e2e\/checkout-flow\.spec\.ts$/,
       /^tests\/e2e\/checkout-guards\.spec\.ts$/,
+      /^tests\/component\/checkout-form\.spec\.ts$/,
     ],
   },
 ];

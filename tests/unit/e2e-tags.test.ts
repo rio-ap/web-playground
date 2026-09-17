@@ -29,6 +29,7 @@ describe('tagsForPaths', () => {
     expect(tagsForPaths(['tests/e2e/checkout-flow.spec.ts'])).toEqual(['@checkout']);
     expect(tagsForPaths(['tests/e2e/checkout-guards.spec.ts'])).toEqual(['@checkout']);
     expect(tagsForPaths(['tests/component/cart-item.spec.ts'])).toEqual(['@cart']);
+    expect(tagsForPaths(['tests/component/checkout-form.spec.ts'])).toEqual(['@checkout']);
   });
 
   it('returns tags in stable order for multiple modules', () => {
@@ -87,6 +88,10 @@ describe('detect-e2e-tags CLI', () => {
 
   it('prints nothing for unrelated input', () => {
     expect(run('README.md\n')).toBe('');
+  });
+
+  it('prints the checkout tag for the checkout form component', () => {
+    expect(run('tests/component/checkout-form.spec.ts\n')).toBe('@checkout');
   });
 
   it('prints all tags for shared input', () => {

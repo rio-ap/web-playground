@@ -66,6 +66,28 @@ test.describe('Checkout Flow', { tag: '@checkout' }, () => {
     await expect(payment.expiryError).toBeVisible();
   });
 
+  test('should reject an incomplete card number', async ({ page }) => {
+    const address = new CheckoutAddressPage(page);
+    const payment = new CheckoutPaymentPage(page);
+    await address.submit(validShipping);
+    await payment.cardInput.fill('1234');
+    await payment.expiryInput.fill(validPayment.expiry);
+    await payment.cvvInput.fill(validPayment.cvv);
+    await payment.reviewBtn.click();
+    await expect(page).toHaveURL(/#\/checkout\/payment$/);
+    await expect(payment.cardError).toBeVisible();
+  });
+
+  test('should reject a 3-digit CVV for an amex card', async ({ page }) => {
+    const address = new CheckoutAddressPage(page);
+    const payment = new CheckoutPaymentPage(page);
+    await address.submit(validShipping);
+    await payment.fill({ cardNumber: '378282246310005', expiry: '12/28', cvv: '123' });
+    await payment.reviewBtn.click();
+    await expect(page).toHaveURL(/#\/checkout\/payment$/);
+    await expect(payment.cvvError).toBeVisible();
+  });
+
   test('should format the card number and expiry while typing', async ({ page }) => {
     const address = new CheckoutAddressPage(page);
     const payment = new CheckoutPaymentPage(page);

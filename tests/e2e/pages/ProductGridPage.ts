@@ -14,7 +14,8 @@ export class ProductGridPage {
   }
 
   async goto(): Promise<void> {
-    await this.page.goto('/');
+    await this.page.goto('/#/shop');
+    await this.expectVisible();
   }
 
   async getCardCount(): Promise<number> {

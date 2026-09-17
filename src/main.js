@@ -2,10 +2,12 @@ import { getProducts, formatPrice } from './products.js';
 import { addItem, removeItem, updateQuantity, getSubtotal, getItemCount } from './cart.js';
 import { validateShippingInfo, validatePaymentInfo, processOrder } from './checkout.js';
 import { bumpCart, flyToCart, showToast } from './effects.js';
+import { registerRoute, startRouter } from './router.js';
+import { homeView } from './views/home.js';
+import { shopView } from './views/shop.js';
 
 let cart = [];
 
-const grid = document.querySelector('[data-testid="product-grid"]');
 const cartModal = document.querySelector('[data-testid="cart-modal"]');
 const cartOverlay = document.querySelector('[data-testid="cart-overlay"]');
 const cartToggle = document.querySelector('[data-testid="cart-toggle-btn"]');
@@ -219,58 +221,23 @@ function clearErrors() {
   });
 }
 
-function renderProducts() {
-  const products = getProducts();
-  grid.innerHTML = products.map((product) => `
-    <div
-      data-testid="product-card-${product.id}"
-      class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow flex flex-col h-full"
-    >
-      <img
-        data-testid="product-image-${product.id}"
-        src="${product.image}"
-        alt="${product.name}"
-        class="w-full h-48 object-cover"
-        loading="lazy"
-      />
-      <div class="p-4 flex flex-col flex-1 gap-2">
-        <h3
-          data-testid="product-name-${product.id}"
-          class="text-lg font-semibold text-gray-900"
-        >${product.name}</h3>
-        <p class="text-sm text-gray-500 flex-1">${product.description}</p>
-        <p
-          data-testid="product-price-${product.id}"
-          class="text-xl font-bold text-blue-600"
-        >${formatPrice(product.price)}</p>
-        <button
-          data-testid="add-to-cart-btn-${product.id}"
-          data-id="${product.id}"
-          class="add-to-cart-btn w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors cursor-pointer"
-        >
-          Add to Cart
-        </button>
-      </div>
-    </div>
-  `).join('');
+document.addEventListener('click', (event) => {
+  const btn = event.target.closest('.add-to-cart-btn');
+  if (!btn) return;
+  const id = Number(btn.dataset.id);
+  const product = getProducts().find((p) => p.id === id);
+  if (!product) return;
+  cart = addItem(cart, product);
+  updateBadge();
+  const image = btn.closest('[data-testid^="product-card-"]')?.querySelector(`[data-testid="product-image-${id}"]`);
+  if (image) {
+    flyToCart(image);
+  } else {
+    bumpCart();
+  }
+  showToast(`${product.name} added to cart`);
+});
 
-  document.querySelectorAll('.add-to-cart-btn').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const id = Number(btn.dataset.id);
-      const product = products.find((p) => p.id === id);
-      if (product) {
-        cart = addItem(cart, product);
-        updateBadge();
-        const image = btn.closest('[data-testid^="product-card-"]')?.querySelector(`[data-testid="product-image-${id}"]`);
-        if (image) {
-          flyToCart(image);
-        } else {
-          bumpCart();
-        }
-        showToast(`${product.name} added to cart`);
-      }
-    });
-  });
-}
-
-renderProducts();
+registerRoute('/', homeView);
+registerRoute('/shop', shopView);
+startRouter();

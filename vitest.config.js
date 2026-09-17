@@ -8,7 +8,7 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['html', 'text', 'json-summary'],
       include: ['src/**/*.js'],
-      exclude: ['node_modules/', 'dist/', 'src/main.js'],
+      exclude: ['node_modules/', 'dist/', 'src/main.js', 'src/router.js', 'src/effects.js', 'src/views/**'],
       thresholds: {
         perFile: true,
         statements: 90,

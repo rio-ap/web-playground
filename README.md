@@ -59,9 +59,10 @@ Six layers, each chosen because it catches something the others cannot:
 
 Design decisions worth noting:
 
+- every spec is tagged by module (`@products`, `@cart`, `@checkout`) — that's what lets CI run a targeted slice for a PR instead of the whole suite
 - the smoke layer runs against the **built artefact**, not the dev server, so base-path and asset problems fail the pipeline before anything ships
 - visual baselines are font-sensitive, so the font stack is pinned rather than left to the system — otherwise the same page is 1017px tall locally and 977px on the runner
-- 43 unit tests and 126 Playwright test runs (42 per browser) — fast enough to run on every PR
+- 53 unit tests (including the CI path-to-tag mapping) and 126 Playwright test runs (42 per browser) — fast enough to run on every PR
 
 ## CI/CD design
 
@@ -77,7 +78,7 @@ flowchart LR
   end
 ```
 
-**CI (pull requests).** A `detect-changes` action inspects the diff and drives job fan-out: a changed module only runs its own unit job, and the 3-browser Playwright matrix only runs when UI or E2E files change. Coverage thresholds are enforced on every PR, and per-browser Playwright reports plus coverage HTML are uploaded as artifacts. Concurrency groups cancel superseded runs.
+**CI (pull requests).** A `detect-changes` action inspects the diff and drives job fan-out: a changed module only runs its own unit job, and the 3-browser Playwright matrix only runs when UI or E2E files change. E2E selection is tag-based — changed paths are mapped to module tags (`@products`, `@cart`, `@checkout`), so a cart-only PR runs just the cart-tagged E2E, accessibility and visual tests while shared or config changes run everything. Coverage thresholds are enforced on every PR, and per-browser Playwright reports plus coverage HTML are uploaded as artifacts. Concurrency groups cancel superseded runs.
 
 **CD (push to `main`).** The pipeline re-runs unit coverage, the full 3-browser E2E suite, and the Vite build. Only then does the production smoke test run against the built output — the deploy step cannot execute if it fails. Coverage and Playwright reports are copied into the deployed site, so every release publishes its own test evidence at `/coverage/` and `/test-reports/`.
 

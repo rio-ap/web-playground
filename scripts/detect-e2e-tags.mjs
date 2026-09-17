@@ -33,8 +33,12 @@ const MODULE_RULES = [
     tag: '@checkout',
     patterns: [
       /^src\/checkout\.js$/,
+      /^src\/checkout-state\.js$/,
+      /^src\/payment\.js$/,
+      /^src\/views\/checkout\//,
+      /^src\/views\/confirmation\.js$/,
       /^tests\/e2e\/checkout-flow\.spec\.ts$/,
-      /^tests\/component\/checkout-form\.spec\.ts$/,
+      /^tests\/e2e\/checkout-guards\.spec\.ts$/,
     ],
   },
 ];

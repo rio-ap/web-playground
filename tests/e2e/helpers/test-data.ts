@@ -1,4 +1,5 @@
-import type { ShippingData, PaymentData } from '../pages/CheckoutPage';
+import type { ShippingData } from '../pages/CheckoutAddressPage';
+import type { PaymentData } from '../pages/CheckoutPaymentPage';
 
 export const validShipping: ShippingData = {
   name: 'John Doe',

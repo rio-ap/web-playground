@@ -1,7 +1,10 @@
-import { test } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import { ProductGridPage } from './pages/ProductGridPage';
 import { CartModalPage } from './pages/CartModalPage';
-import { CheckoutPage } from './pages/CheckoutPage';
+import { CheckoutAddressPage } from './pages/CheckoutAddressPage';
+import { CheckoutPaymentPage } from './pages/CheckoutPaymentPage';
+import { CheckoutReviewPage } from './pages/CheckoutReviewPage';
+import { ConfirmationPage } from './pages/ConfirmationPage';
 import { validShipping, validPayment } from './helpers/test-data';
 
 test.describe('Checkout Flow', { tag: '@checkout' }, () => {
@@ -14,57 +17,97 @@ test.describe('Checkout Flow', { tag: '@checkout' }, () => {
     await cart.checkout();
   });
 
-  test('should display the shipping info form', async ({ page }) => {
-    const checkout = new CheckoutPage(page);
-    await checkout.expectShippingStep();
+  test('should open the shipping address page on the first step', async ({ page }) => {
+    const address = new CheckoutAddressPage(page);
+    await address.expectVisible();
+    await address.expectStepActive('address');
   });
 
-  test('should show validation errors when shipping form is submitted empty', async ({ page }) => {
-    const checkout = new CheckoutPage(page);
-    await checkout.expectShippingErrors();
+  test('should show validation errors when the address is submitted empty', async ({ page }) => {
+    const address = new CheckoutAddressPage(page);
+    await address.continueBtn.click();
+    await address.expectErrors();
+    await expect(page).toHaveURL(/#\/checkout\/address$/);
   });
 
-  test('should allow cancel back to cart from shipping', async ({ page }) => {
-    const checkout = new CheckoutPage(page);
-    const cart = new CartModalPage(page);
-    await checkout.cancel();
-    await cart.expectModalVisible();
+  test('should proceed to the payment page after valid shipping info', async ({ page }) => {
+    const address = new CheckoutAddressPage(page);
+    const payment = new CheckoutPaymentPage(page);
+    await address.submit(validShipping);
+    await payment.expectVisible();
+    await payment.expectStepActive('payment');
   });
 
-  test('should proceed to payment after valid shipping info', async ({ page }) => {
-    const checkout = new CheckoutPage(page);
-    await checkout.fillShipping(validShipping);
-    await checkout.expectPaymentStep();
+  test('should show validation errors when payment is submitted empty', async ({ page }) => {
+    const address = new CheckoutAddressPage(page);
+    const payment = new CheckoutPaymentPage(page);
+    await address.submit(validShipping);
+    await payment.reviewBtn.click();
+    await payment.expectErrors();
+    await expect(page).toHaveURL(/#\/checkout\/payment$/);
   });
 
-  test('should show validation errors when payment form is submitted empty', async ({ page }) => {
-    const checkout = new CheckoutPage(page);
-    await checkout.fillShipping(validShipping);
-    await checkout.expectPaymentErrors();
+  test('should format the card number and expiry while typing', async ({ page }) => {
+    const address = new CheckoutAddressPage(page);
+    const payment = new CheckoutPaymentPage(page);
+    await address.submit(validShipping);
+
+    await payment.cardInput.fill('4242424242424242');
+    await expect(payment.cardInput).toHaveValue('4242 4242 4242 4242');
+    await expect(payment.cardBrand).toHaveText('VISA');
+    await expect(payment.cardBrand).not.toHaveClass(/hidden/);
+
+    await payment.cardInput.fill('378282246310005');
+    await expect(payment.cardInput).toHaveValue('3782 822463 10005');
+    await expect(payment.cardBrand).toHaveText('AMEX');
+
+    await payment.expiryInput.fill('1228');
+    await expect(payment.expiryInput).toHaveValue('12/28');
   });
 
-  test('should go back to shipping from payment', async ({ page }) => {
-    const checkout = new CheckoutPage(page);
-    await checkout.fillShipping(validShipping);
-    await checkout.goBack();
-    await checkout.expectShippingStep();
+  test('should review the shipping, payment and item details', async ({ page }) => {
+    const address = new CheckoutAddressPage(page);
+    const payment = new CheckoutPaymentPage(page);
+    const review = new CheckoutReviewPage(page);
+    await address.submit(validShipping);
+    await payment.submit(validPayment);
+
+    await review.expectVisible();
+    await review.expectStepActive('review');
+    await expect(review.shippingBlock).toContainText(validShipping.name);
+    await expect(review.shippingBlock).toContainText(validShipping.address);
+    await expect(review.paymentBlock).toContainText('Visa ending 1111');
+    await expect(review.paymentBlock).toContainText('expires 12/28');
+    await expect(review.itemsBlock).toContainText('Wireless Headphones');
+    await expect(review.total).toHaveText('$79.99');
   });
 
-  test('should complete full checkout flow and show order confirmation', async ({ page }) => {
-    const checkout = new CheckoutPage(page);
-    await checkout.fillShipping(validShipping);
-    await checkout.fillPayment(validPayment);
-    await checkout.expectOrderConfirmed();
+  test('should complete the order and clear the cart badge', async ({ page }) => {
+    const address = new CheckoutAddressPage(page);
+    const payment = new CheckoutPaymentPage(page);
+    const review = new CheckoutReviewPage(page);
+    const confirmation = new ConfirmationPage(page);
+    await address.submit(validShipping);
+    await payment.submit(validPayment);
+    await review.placeOrder();
+
+    await confirmation.expectConfirmed();
+    await expect(confirmation.orderNumber).toHaveText(/^ORD-/);
+    await expect(page.locator('[data-testid="cart-badge"]')).toHaveClass(/hidden/);
   });
 
-  test('should clear cart and return to products after continue shopping', async ({ page }) => {
-    const checkout = new CheckoutPage(page);
-    const cart = new CartModalPage(page);
+  test('should return to the shop after continue shopping', async ({ page }) => {
+    const address = new CheckoutAddressPage(page);
+    const payment = new CheckoutPaymentPage(page);
+    const review = new CheckoutReviewPage(page);
+    const confirmation = new ConfirmationPage(page);
     const products = new ProductGridPage(page);
-    await checkout.fillShipping(validShipping);
-    await checkout.fillPayment(validPayment);
-    await checkout.continueShopping();
-    await cart.expectBadgeHidden();
+    await address.submit(validShipping);
+    await payment.submit(validPayment);
+    await review.placeOrder();
+    await confirmation.continueShopping();
+
     await products.expectVisible();
+    await expect(page.locator('[data-testid="cart-badge"]')).toHaveClass(/hidden/);
   });
 });

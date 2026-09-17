@@ -7,11 +7,18 @@ describe('tagsForPaths', () => {
     expect(tagsForPaths(['src/products.js'])).toEqual(['@home', '@shop']);
     expect(tagsForPaths(['src/cart.js'])).toEqual(['@cart']);
     expect(tagsForPaths(['src/checkout.js'])).toEqual(['@checkout']);
+    expect(tagsForPaths(['src/payment.js'])).toEqual(['@checkout']);
+    expect(tagsForPaths(['src/checkout-state.js'])).toEqual(['@checkout']);
   });
 
   it('maps home and shop view sources to their tags', () => {
     expect(tagsForPaths(['src/views/home.js'])).toEqual(['@home']);
     expect(tagsForPaths(['src/views/shop.js'])).toEqual(['@shop']);
+  });
+
+  it('maps checkout view sources to the checkout tag', () => {
+    expect(tagsForPaths(['src/views/checkout/payment.js'])).toEqual(['@checkout']);
+    expect(tagsForPaths(['src/views/confirmation.js'])).toEqual(['@checkout']);
   });
 
   it('maps module spec and component files to their tags', () => {
@@ -20,8 +27,8 @@ describe('tagsForPaths', () => {
     expect(tagsForPaths(['tests/e2e/cart-flow.spec.ts'])).toEqual(['@cart']);
     expect(tagsForPaths(['tests/e2e/add-to-cart-feedback.spec.ts'])).toEqual(['@cart']);
     expect(tagsForPaths(['tests/e2e/checkout-flow.spec.ts'])).toEqual(['@checkout']);
+    expect(tagsForPaths(['tests/e2e/checkout-guards.spec.ts'])).toEqual(['@checkout']);
     expect(tagsForPaths(['tests/component/cart-item.spec.ts'])).toEqual(['@cart']);
-    expect(tagsForPaths(['tests/component/checkout-form.spec.ts'])).toEqual(['@checkout']);
   });
 
   it('returns tags in stable order for multiple modules', () => {

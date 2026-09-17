@@ -42,7 +42,8 @@ export class CartModalPage {
 
   async checkout(): Promise<void> {
     await this.checkoutBtn.click();
-    await expect(this.page.locator('[data-testid="checkout-form"]')).toBeVisible();
+    await expect(this.page).toHaveURL(/#\/checkout\/address$/);
+    await expect(this.page.locator('[data-testid="checkout-address-page"]')).toBeVisible();
   }
 
   async expectModalVisible(): Promise<void> {

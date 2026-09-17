@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Checkout Form Component', () => {
+test.describe('Checkout Form Component', { tag: '@checkout' }, () => {
   test('should render shipping form with all required fields', async ({ page }) => {
     await page.setContent(`
       <div data-testid="checkout-form" class="max-w-md mx-auto p-6">

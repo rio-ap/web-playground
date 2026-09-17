@@ -8,7 +8,7 @@ import { validShipping } from '../helpers/test-data';
 test.describe('Accessibility Audits', () => {
   test.describe.configure({ mode: 'serial' });
 
-  test('homepage — no critical or serious a11y violations', async ({ page }) => {
+  test('homepage — no critical or serious a11y violations', { tag: '@products' }, async ({ page }) => {
     const products = new ProductGridPage(page);
     await products.goto();
     await products.expectVisible();
@@ -20,7 +20,7 @@ test.describe('Accessibility Audits', () => {
     expect(results.violations).toEqual([]);
   });
 
-  test('cart modal — no critical or serious a11y violations', async ({ page }) => {
+  test('cart modal — no critical or serious a11y violations', { tag: '@cart' }, async ({ page }) => {
     const products = new ProductGridPage(page);
     const cart = new CartModalPage(page);
     await products.goto();
@@ -37,7 +37,7 @@ test.describe('Accessibility Audits', () => {
     expect(results.violations).toEqual([]);
   });
 
-  test('checkout shipping form — no critical or serious a11y violations', async ({ page }) => {
+  test('checkout shipping form — no critical or serious a11y violations', { tag: '@checkout' }, async ({ page }) => {
     const products = new ProductGridPage(page);
     const cart = new CartModalPage(page);
     const checkout = new CheckoutPage(page);
@@ -55,7 +55,7 @@ test.describe('Accessibility Audits', () => {
     expect(results.violations).toEqual([]);
   });
 
-  test('checkout payment form — no critical or serious a11y violations', async ({ page }) => {
+  test('checkout payment form — no critical or serious a11y violations', { tag: '@checkout' }, async ({ page }) => {
     const products = new ProductGridPage(page);
     const cart = new CartModalPage(page);
     const checkout = new CheckoutPage(page);

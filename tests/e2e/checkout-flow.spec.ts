@@ -4,7 +4,7 @@ import { CartModalPage } from './pages/CartModalPage';
 import { CheckoutPage } from './pages/CheckoutPage';
 import { validShipping, validPayment } from './helpers/test-data';
 
-test.describe('Checkout Flow', () => {
+test.describe('Checkout Flow', { tag: '@checkout' }, () => {
   test.beforeEach(async ({ page }) => {
     const products = new ProductGridPage(page);
     const cart = new CartModalPage(page);

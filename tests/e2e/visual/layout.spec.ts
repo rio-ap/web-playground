@@ -18,14 +18,14 @@ test.describe('Visual Regression', () => {
     });
   });
 
-  test('product grid — full page baseline', async ({ page }) => {
+  test('product grid — full page baseline', { tag: '@products' }, async ({ page }) => {
     const products = new ProductGridPage(page);
     await products.goto();
     await products.expectVisible();
     await expect(page).toHaveScreenshot('product-grid-full-page.png', { fullPage: true, timeout: 30000 });
   });
 
-  test('cart modal — with two items baseline', async ({ page }) => {
+  test('cart modal — with two items baseline', { tag: '@cart' }, async ({ page }) => {
     const products = new ProductGridPage(page);
     const cart = new CartModalPage(page);
     await products.goto();
@@ -37,7 +37,7 @@ test.describe('Visual Regression', () => {
     await expect(page.locator('[data-testid="cart-modal"]')).toHaveScreenshot('cart-modal-with-items.png');
   });
 
-  test('checkout — shipping step baseline', async ({ page }) => {
+  test('checkout — shipping step baseline', { tag: '@checkout' }, async ({ page }) => {
     const products = new ProductGridPage(page);
     const cart = new CartModalPage(page);
     await products.goto();
@@ -47,7 +47,7 @@ test.describe('Visual Regression', () => {
     await expect(page.locator('[data-testid="checkout-form"]')).toHaveScreenshot('checkout-shipping.png');
   });
 
-  test('checkout — payment step baseline', async ({ page }) => {
+  test('checkout — payment step baseline', { tag: '@checkout' }, async ({ page }) => {
     const products = new ProductGridPage(page);
     const cart = new CartModalPage(page);
     const checkout = new CheckoutPage(page);
@@ -60,7 +60,7 @@ test.describe('Visual Regression', () => {
     await expect(page.locator('[data-testid="checkout-form"]')).toHaveScreenshot('checkout-payment.png');
   });
 
-  test('checkout — order confirmation baseline', async ({ page }) => {
+  test('checkout — order confirmation baseline', { tag: '@checkout' }, async ({ page }) => {
     const products = new ProductGridPage(page);
     const cart = new CartModalPage(page);
     const checkout = new CheckoutPage(page);

@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Cart Item Component', () => {
+test.describe('Cart Item Component', { tag: '@cart' }, () => {
   test('should render product name, price, quantity, and action buttons', async ({ page }) => {
     await page.setContent(`
       <div data-testid="cart-item-1" class="flex items-center gap-4 p-4 border-b">

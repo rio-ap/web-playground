@@ -2,7 +2,7 @@ import { test } from '@playwright/test';
 import { ProductGridPage } from './pages/ProductGridPage';
 import { CartModalPage } from './pages/CartModalPage';
 
-test.describe('Cart Flow', () => {
+test.describe('Cart Flow', { tag: '@cart' }, () => {
   test.beforeEach(async ({ page }) => {
     const products = new ProductGridPage(page);
     await products.goto();

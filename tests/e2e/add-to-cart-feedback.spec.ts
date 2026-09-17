@@ -40,7 +40,7 @@ async function recordFeedback(page: Page) {
   });
 }
 
-test.describe('Add-to-cart feedback', () => {
+test.describe('Add-to-cart feedback', { tag: '@cart' }, () => {
   test('flies the product image to the cart and shows a toast with the product name', async ({ page }) => {
     const products = new ProductGridPage(page);
     await products.goto();

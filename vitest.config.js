@@ -6,7 +6,7 @@ export default defineConfig({
     include: ['tests/unit/**/*.test.{js,ts}'],
     coverage: {
       provider: 'v8',
-      reporter: ['html', 'text', 'json-summary'],
+      reporter: ['html', 'text'],
       include: ['src/**/*.js'],
       exclude: ['node_modules/', 'dist/', 'src/main.js', 'src/router.js', 'src/effects.js'],
       thresholds: {

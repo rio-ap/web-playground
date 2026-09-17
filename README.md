@@ -53,7 +53,7 @@ Six layers, each chosen because it catches something the others cannot:
 | Unit | Vitest | Cart math, checkout validation, product helpers. Coverage thresholds: 80% statements/functions/lines, 70% branches |
 | Component | Playwright (`setContent`) | Isolated UI fragments without the full app |
 | E2E | Playwright + Page Object Model | Full user flows (`tests/e2e/pages`) on Chromium, Firefox and WebKit |
-| Accessibility | `@axe-core/playwright` | Homepage, cart modal, shipping and payment steps — no critical or serious violations |
+| Accessibility | `@axe-core/playwright` (own config, chromium) | Homepage, cart modal, shipping and payment steps — no critical or serious violations; runs as its own CI job |
 | Visual regression | Playwright screenshots | 5 screens × 3 browsers, baselines committed and generated on Linux |
 | Production smoke | Playwright against `vite preview` | Built output sanity: base path resolves, no console errors or failed requests, images decode, add-to-cart works |
 
@@ -62,7 +62,7 @@ Design decisions worth noting:
 - every spec is tagged by module (`@products`, `@cart`, `@checkout`) — that's what lets CI run a targeted slice for a PR instead of the whole suite
 - the smoke layer runs against the **built artefact**, not the dev server, so base-path and asset problems fail the pipeline before anything ships
 - visual baselines are font-sensitive, so the font stack is pinned rather than left to the system — otherwise the same page is 1017px tall locally and 977px on the runner
-- 53 unit tests (including the CI path-to-tag mapping) and 126 Playwright test runs (42 per browser) — fast enough to run on every PR
+- 53 unit tests (including the CI path-to-tag mapping), 114 Playwright runs across three browsers (38 each), plus 4 chromium a11y audits — fast enough to run on every PR
 
 ## CI/CD design
 
@@ -71,6 +71,7 @@ flowchart LR
   subgraph CI["CI · pull requests"]
     A[detect-changes] --> U["unit jobs · only for changed modules"]
     A --> E["e2e matrix · chromium / firefox / webkit"]
+    A --> X["a11y audit · chromium"]
     A --> V["coverage + thresholds"]
   end
   subgraph CD["CD · push to main"]
@@ -78,9 +79,9 @@ flowchart LR
   end
 ```
 
-**CI (pull requests).** A `detect-changes` action inspects the diff and drives job fan-out: a changed module only runs its own unit job, and the 3-browser Playwright matrix only runs when UI or E2E files change. E2E selection is tag-based — changed paths are mapped to module tags (`@products`, `@cart`, `@checkout`), so a cart-only PR runs just the cart-tagged E2E, accessibility and visual tests while shared or config changes run everything. Coverage thresholds are enforced on every PR, and per-browser Playwright reports plus coverage HTML are uploaded as artifacts. Concurrency groups cancel superseded runs.
+**CI (pull requests).** A `detect-changes` action inspects the diff and drives job fan-out: a changed module only runs its own unit job, and the 3-browser Playwright matrix only runs when UI or E2E files change. E2E selection is tag-based — changed paths are mapped to module tags (`@products`, `@cart`, `@checkout`), so a cart-only PR runs just the cart-tagged E2E and visual tests plus the cart a11y audit in its own chromium job, while shared or config changes run everything. Coverage thresholds are enforced on every PR, and per-browser Playwright reports, the a11y report and coverage HTML are uploaded as artifacts. Concurrency groups cancel superseded runs.
 
-**CD (push to `main`).** The pipeline re-runs unit coverage, the full 3-browser E2E suite, and the Vite build. Only then does the production smoke test run against the built output — the deploy step cannot execute if it fails. Coverage and Playwright reports are copied into the deployed site, so every release publishes its own test evidence at `/coverage/` and `/test-reports/`.
+**CD (push to `main`).** The pipeline re-runs unit coverage, the full 3-browser E2E suite, the accessibility audits, and the Vite build. Only then does the production smoke test run against the built output — the deploy step cannot execute if it fails. Coverage and Playwright reports are copied into the deployed site, so every release publishes its own test evidence at `/coverage/` and `/test-reports/`.
 
 Workflows: [`.github/workflows/ci.yml`](.github/workflows/ci.yml) · [`.github/workflows/cd.yml`](.github/workflows/cd.yml)
 

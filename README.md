@@ -126,6 +126,7 @@ Workflows: [`.github/workflows/ci.yml`](.github/workflows/ci.yml) · [`.github/w
 | Decision | Alternatives considered | Why this way |
 |---|---|---|
 | Hash routing | History API, multi-page app | Pages has no server rewrites; hash gives deep links, Back-button behavior and zero deploy config |
+| Custom domain served at the root | Keep the `/web-playground/` project path | GitHub Pages drops the repository path when a custom domain is set: the old `github.io/repo/` URL 301s to the domain root, so Vite's `base` had to go and assets and report links are root-relative |
 | Vanilla JS modules | React/Vue | Removes framework noise from both the tests and the CI runtime; keeps the playground focused on test engineering |
 | Pure views + delegated events | View-local listeners | Views stay unit-testable; all DOM wiring lives in one place |
 | Per-file coverage thresholds | Global thresholds | Global averages let a new untested file pass; per-file does not |

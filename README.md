@@ -142,6 +142,7 @@ The application code was built with AI assistance. The test strategy, automation
 
 - LinkedIn: [linkedin.com/in/rio-anggara](https://www.linkedin.com/in/rio-anggara/)
 - GitHub: [@rio-ap](https://github.com/rio-ap)
+- Portfolio: [me.trazire.com](https://me.trazire.com/)
 
 ## License
 

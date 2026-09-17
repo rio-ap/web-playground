@@ -1,0 +1,14 @@
+# Dependabot version updates are parked for this demo repo: updates are applied
+# deliberately (when there is a reason), not on a schedule. The configuration is
+# kept as a reference — uncomment the block below to enable it, e.g. semiannually:
+#
+# version: 2
+# updates:
+#   - package-ecosystem: npm
+#     directory: /
+#     schedule:
+#       interval: semiannually
+#   - package-ecosystem: github-actions
+#     directory: /
+#     schedule:
+#       interval: semiannually

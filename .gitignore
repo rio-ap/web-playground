@@ -1,0 +1,11 @@
+node_modules/
+dist/
+coverage/
+.vite/
+*.local
+.env
+test-results/
+playwright-report/
+playwright-report-smoke/
+playwright-report-a11y/
+playwright/.cache/

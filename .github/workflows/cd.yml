@@ -1,0 +1,70 @@
+name: CD
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: cd-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - name: Unit Test Coverage
+        run: npm run coverage
+
+      - name: Install Playwright
+        run: npx playwright install --with-deps
+
+      - name: E2E Tests
+        run: npx playwright test
+
+      - name: Accessibility Audits
+        run: npm run test:a11y
+
+      - name: Build
+        run: npm run build
+
+      - name: Copy coverage to dist
+        run: mkdir -p dist/coverage && cp -r coverage/* dist/coverage/
+
+      - name: Copy test reports to dist
+        run: mkdir -p dist/test-reports && cp -r playwright-report/* dist/test-reports/
+
+      - name: Production Smoke Test
+        run: npm run test:smoke
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    steps:
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

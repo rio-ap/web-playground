@@ -1,10 +1,23 @@
 import { getProducts, formatPrice } from './products.js';
 import { addItem, removeItem, updateQuantity, getSubtotal, getItemCount } from './cart.js';
 import { validateShippingInfo, validatePaymentInfo, processOrder } from './checkout.js';
+import {
+  setShipping,
+  getShipping,
+  setPayment,
+  getPayment,
+  setLastOrder,
+  getLastOrder,
+} from './checkout-state.js';
+import { detectCardBrand, formatCardNumber, formatExpiry } from './payment.js';
 import { bumpCart, flyToCart, showToast } from './effects.js';
 import { registerRoute, startRouter } from './router.js';
 import { homeView } from './views/home.js';
 import { shopView } from './views/shop.js';
+import { createAddressView } from './views/checkout/address.js';
+import { createPaymentView } from './views/checkout/payment.js';
+import { createReviewView } from './views/checkout/review.js';
+import { confirmationView } from './views/confirmation.js';
 
 let cart = [];
 
@@ -13,18 +26,15 @@ const cartOverlay = document.querySelector('[data-testid="cart-overlay"]');
 const cartToggle = document.querySelector('[data-testid="cart-toggle-btn"]');
 const cartClose = document.querySelector('[data-testid="cart-close-btn"]');
 const cartBadge = document.querySelector('[data-testid="cart-badge"]');
-const cartBody = document.getElementById('cart-body');
 const cartEmpty = document.querySelector('[data-testid="cart-empty"]');
 const cartItemsContainer = document.getElementById('cart-items-container');
 const cartFooter = document.getElementById('cart-footer');
 const cartTotal = document.querySelector('[data-testid="cart-total-price"]');
 const checkoutBtn = document.querySelector('[data-testid="checkout-btn"]');
-const checkoutView = document.getElementById('checkout-view');
-const checkoutForm = document.querySelector('[data-testid="checkout-form"]');
-const checkoutStepTitle = document.querySelector('[data-testid="checkout-step-title"]');
-const stepShipping = document.getElementById('checkout-step-shipping');
-const stepPayment = document.getElementById('checkout-step-payment');
-const stepConfirmation = document.getElementById('checkout-step-confirmation');
+
+const addressView = createAddressView(() => cart);
+const paymentView = createPaymentView(() => cart);
+const reviewView = createReviewView(() => cart);
 
 function updateBadge() {
   const count = getItemCount(cart);
@@ -88,29 +98,15 @@ function renderCartItems() {
   });
 }
 
-function showCartView() {
-  checkoutView.classList.add('hidden');
-  cartBody.classList.remove('hidden');
-  cartFooter.classList.remove('hidden');
-  renderCartItems();
-}
-
-function showCheckoutView() {
-  cartBody.classList.add('hidden');
-  cartFooter.classList.add('hidden');
-  checkoutView.classList.remove('hidden');
-}
-
 function openCart() {
+  renderCartItems();
   cartModal.classList.remove('hidden');
   document.body.classList.add('overflow-hidden');
-  showCartView();
 }
 
 function closeCart() {
   cartModal.classList.add('hidden');
   document.body.classList.remove('overflow-hidden');
-  showCartView();
 }
 
 cartToggle.addEventListener('click', () => {
@@ -125,84 +121,27 @@ cartClose.addEventListener('click', closeCart);
 cartOverlay.addEventListener('click', closeCart);
 
 checkoutBtn.addEventListener('click', () => {
-  showCheckoutView();
-  checkoutStepTitle.textContent = 'Shipping Info';
-  stepShipping.classList.remove('hidden');
-  stepPayment.classList.add('hidden');
-  stepConfirmation.classList.add('hidden');
-  clearErrors();
+  closeCart();
+  window.location.hash = '#/checkout/address';
 });
 
-document.querySelector('[data-testid="checkout-cancel-btn"]').addEventListener('click', () => {
-  showCartView();
-});
-
-document.querySelector('[data-testid="checkout-next-btn"]').addEventListener('click', () => {
-  const data = {
+function readShippingForm() {
+  return {
     name: document.querySelector('[data-testid="shipping-name-input"]').value,
     address: document.querySelector('[data-testid="shipping-address-input"]').value,
     city: document.querySelector('[data-testid="shipping-city-input"]').value,
     zip: document.querySelector('[data-testid="shipping-zip-input"]').value,
     email: document.querySelector('[data-testid="shipping-email-input"]').value,
   };
+}
 
-  const errors = validateShippingInfo(data);
-  clearErrors();
-
-  if (Object.keys(errors).length > 0) {
-    showErrors('shipping', errors);
-    return;
-  }
-
-  stepShipping.classList.add('hidden');
-  stepPayment.classList.remove('hidden');
-  checkoutStepTitle.textContent = 'Payment Info';
-  clearErrors();
-});
-
-document.querySelector('[data-testid="checkout-back-btn"]').addEventListener('click', () => {
-  stepPayment.classList.add('hidden');
-  stepShipping.classList.remove('hidden');
-  checkoutStepTitle.textContent = 'Shipping Info';
-  clearErrors();
-});
-
-document.querySelector('[data-testid="checkout-submit-btn"]').addEventListener('click', () => {
-  const data = {
+function readPaymentForm() {
+  return {
     cardNumber: document.querySelector('[data-testid="payment-card-input"]').value,
     expiry: document.querySelector('[data-testid="payment-expiry-input"]').value,
     cvv: document.querySelector('[data-testid="payment-cvv-input"]').value,
   };
-
-  const errors = validatePaymentInfo(data);
-  clearErrors();
-
-  if (Object.keys(errors).length > 0) {
-    showErrors('payment', errors);
-    return;
-  }
-
-  const shippingData = {
-    name: document.querySelector('[data-testid="shipping-name-input"]').value,
-    address: document.querySelector('[data-testid="shipping-address-input"]').value,
-    city: document.querySelector('[data-testid="shipping-city-input"]').value,
-    zip: document.querySelector('[data-testid="shipping-zip-input"]').value,
-    email: document.querySelector('[data-testid="shipping-email-input"]').value,
-  };
-
-  const order = processOrder(cart, shippingData, data);
-
-  stepPayment.classList.add('hidden');
-  stepConfirmation.classList.remove('hidden');
-  checkoutStepTitle.textContent = 'Order Confirmed!';
-  document.querySelector('[data-testid="order-number"]').textContent = order.orderNumber;
-});
-
-document.querySelector('[data-testid="continue-shopping-btn"]').addEventListener('click', () => {
-  cart = [];
-  updateBadge();
-  closeCart();
-});
+}
 
 function showErrors(prefix, errors) {
   Object.keys(errors).forEach((key) => {
@@ -221,7 +160,55 @@ function clearErrors() {
   });
 }
 
+function handleCheckoutAction(action) {
+  if (action === 'checkout-continue') {
+    clearErrors();
+    const shipping = readShippingForm();
+    const errors = validateShippingInfo(shipping);
+    if (Object.keys(errors).length > 0) {
+      showErrors('shipping', errors);
+      return;
+    }
+    setShipping(shipping);
+    window.location.hash = '#/checkout/payment';
+    return;
+  }
+
+  if (action === 'payment-review') {
+    clearErrors();
+    const payment = readPaymentForm();
+    const errors = validatePaymentInfo(payment);
+    if (Object.keys(errors).length > 0) {
+      showErrors('payment', errors);
+      return;
+    }
+    setPayment(payment);
+    window.location.hash = '#/checkout/review';
+    return;
+  }
+
+  if (action === 'place-order') {
+    const order = processOrder(cart, getShipping(), getPayment());
+    setLastOrder(order);
+    cart = [];
+    updateBadge();
+    closeCart();
+    window.location.hash = '#/confirmation';
+    return;
+  }
+
+  if (action === 'continue-shopping') {
+    window.location.hash = '#/shop';
+  }
+}
+
 document.addEventListener('click', (event) => {
+  const actionEl = event.target.closest('[data-action]');
+  if (actionEl) {
+    handleCheckoutAction(actionEl.dataset.action);
+    return;
+  }
+
   const btn = event.target.closest('.add-to-cart-btn');
   if (!btn) return;
   const id = Number(btn.dataset.id);
@@ -238,6 +225,60 @@ document.addEventListener('click', (event) => {
   showToast(`${product.name} added to cart`);
 });
 
+document.addEventListener('input', (event) => {
+  const input = event.target;
+  if (!(input instanceof HTMLInputElement)) return;
+  const testid = input.getAttribute('data-testid');
+
+  if (testid === 'payment-card-input') {
+    input.value = formatCardNumber(input.value);
+    const brand = detectCardBrand(input.value);
+    const chip = document.querySelector('[data-testid="card-brand"]');
+    if (chip) {
+      chip.textContent = brand ? brand.toUpperCase() : '';
+      chip.classList.toggle('hidden', !brand);
+    }
+    return;
+  }
+
+  if (testid === 'payment-expiry-input') {
+    input.value = formatExpiry(input.value);
+  }
+});
+
+function guarded(view, guard) {
+  return {
+    name: view.name,
+    mount(app) {
+      const redirect = guard();
+      if (redirect) {
+        window.location.replace(redirect);
+        return;
+      }
+      view.mount(app);
+    },
+  };
+}
+
 registerRoute('/', homeView);
 registerRoute('/shop', shopView);
+registerRoute('/checkout', {
+  name: 'checkout-redirect',
+  mount() {
+    window.location.replace('#/checkout/address');
+  },
+});
+registerRoute('/checkout/address', guarded(addressView, () => (cart.length === 0 ? '#/shop' : null)));
+registerRoute('/checkout/payment', guarded(paymentView, () => {
+  if (cart.length === 0) return '#/shop';
+  if (!getShipping()) return '#/checkout/address';
+  return null;
+}));
+registerRoute('/checkout/review', guarded(reviewView, () => {
+  if (cart.length === 0) return '#/shop';
+  if (!getPayment()) return '#/checkout/payment';
+  return null;
+}));
+registerRoute('/confirmation', guarded(confirmationView, () => (getLastOrder() ? null : '#/')));
+
 startRouter();

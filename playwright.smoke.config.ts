@@ -11,7 +11,7 @@ export default defineConfig({
     ['list'],
   ],
   use: {
-    baseURL: 'http://localhost:4173/web-playground/',
+    baseURL: 'http://localhost:4173/',
     screenshot: 'only-on-failure',
   },
   projects: [
@@ -22,7 +22,7 @@ export default defineConfig({
   ],
   webServer: {
     command: 'npm run preview -- --port 4173 --strictPort',
-    url: 'http://localhost:4173/web-playground/',
+    url: 'http://localhost:4173/',
     reuseExistingServer: !process.env.CI,
   },
 });

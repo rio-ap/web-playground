@@ -11,5 +11,4 @@ const tightenCsp = {
 
 export default defineConfig({
   plugins: [tailwindcss(), tightenCsp],
-  base: '/web-playground/',
 });

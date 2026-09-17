@@ -5,9 +5,9 @@ A small, self-contained e-commerce SPA (home → shop → cart → checkout) bui
 [![CI](https://github.com/rio-ap/web-playground/actions/workflows/ci.yml/badge.svg)](https://github.com/rio-ap/web-playground/actions/workflows/ci.yml)
 [![CD](https://github.com/rio-ap/web-playground/actions/workflows/cd.yml/badge.svg)](https://github.com/rio-ap/web-playground/actions/workflows/cd.yml)
 
-**Live demo:** [https://playground.trazire.com/web-playground/](https://playground.trazire.com/web-playground/)
+**Live demo:** [https://playground.trazire.com/](https://playground.trazire.com/)
 
-**Test reports:** [unit coverage](https://playground.trazire.com/web-playground/coverage/) · [Playwright report](https://playground.trazire.com/web-playground/test-reports/)
+**Test reports:** [unit coverage](https://playground.trazire.com/coverage/) · [Playwright report](https://playground.trazire.com/test-reports/)
 
 ## What this is
 
@@ -42,7 +42,7 @@ QA and SDET practitioners who want something more realistic than a todo list to 
 | Routing | `src/router.js` — hash routes | Works on GitHub Pages with no server rewrites, gives real URLs and a working Back button |
 | Wiring | `src/main.js` | The only place that touches the DOM, listens for events, and enforces route guards |
 | Feedback | `src/effects.js` | Fly-to-cart, badge pop, toast; all gated behind `prefers-reduced-motion` |
-| Build | Vite 6 | Fast dev server; production bundle served from the repo's Pages sub-path |
+| Build | Vite 6 | Fast dev server; production bundle served from the custom domain root |
 | Styling | Tailwind CSS 4 (`@tailwindcss/vite`) | Utility classes only; no runtime CSS |
 | Assets | Local SVG placeholders, local favicon, generated OG image | No CDN or third-party requests — CI and users see identical pages |
 
@@ -65,7 +65,7 @@ Six layers, each chosen because it catches something the others cannot:
 | E2E | Playwright + Page Object Model | Home, shop, cart, routing, checkout flow, guards, validation negatives — Chromium, Firefox, WebKit |
 | Accessibility | `@axe-core/playwright` (own config, chromium) | 7 page-level audits: home, shop, cart, address, payment, review, confirmation |
 | Visual regression | Playwright screenshots | 7 screens × 3 browsers, baselines committed and generated on Linux |
-| Production smoke | Playwright against `vite preview` | Built output sanity: base path resolves, no console errors or failed requests, images decode, add-to-cart works |
+| Production smoke | Playwright against `vite preview` | Built output sanity: no missing assets, no console errors or failed requests, images decode, add-to-cart works |
 
 ### Why these layers
 
@@ -131,7 +131,7 @@ Workflows: [`.github/workflows/ci.yml`](.github/workflows/ci.yml) · [`.github/w
 | Per-file coverage thresholds | Global thresholds | Global averages let a new untested file pass; per-file does not |
 | Module tags for E2E selection | Run everything, or select by changed spec files | Targeted runs keep PR feedback fast; tags follow behavior, not file paths |
 | a11y in its own chromium job | Part of the 3-browser matrix | Same signal at a third of the cost; page-level audits do not need three engines |
-| Smoke test gating deploy | Rely on E2E against the dev server | Only the built artefact catches base-path/asset breakage before it ships |
+| Smoke test gating deploy | Rely on E2E against the dev server | Only the built artefact catches asset-path breakage (wrong base, missing files) before it ships |
 | Pinned font stack | System font stack | Removes cross-environment layout drift from visual tests (1017px vs 977px) |
 | Local SVG assets | placehold.co / CDN images | No third-party runtime dependency; CI and users see byte-identical pages |
 | Simulated payment with explicit TEST MODE messaging | Fake it silently | Keeps the demo honest without giving up the realistic UX |

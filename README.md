@@ -51,7 +51,7 @@ Routes: `#/` (home), `#/shop`, `#/checkout/address`, `#/checkout/payment`, `#/ch
 Additional design details:
 
 - **Payment is simulated, and says so.** A lock banner, a `TEST MODE` chip and an explicit "details are never stored" note keep the UX honest while still feeling like a real checkout. Card input is formatted live (Visa/Mastercard/Amex grouping), with brand detection and caret-preserving edits.
-- **A strict CSP meta policy** (`default-src 'self'`, no inline scripts) plus local-only assets keeps the browser console clean — which the smoke test enforces.
+- **A strict CSP meta policy** (`default-src 'self'`, no inline scripts) keeps the browser console clean — which the smoke test enforces. A small Vite transform drops `'unsafe-inline'` from `style-src` in the production build only, where it isn't needed (the dev server is the only thing that requires it).
 - **The sans font stack is pinned** (`Arial, Helvetica, sans-serif`) so Linux CI and local runs render identically. Before pinning, the same page was 1017px tall locally and 977px on the runner, and every visual baseline failed for a reason that had nothing to do with the code.
 
 ## Test architecture
@@ -104,7 +104,7 @@ flowchart LR
   M([Push to main]) --> C["coverage +<br/>per-file thresholds"] --> E["playwright<br/>3 browsers"] --> A["a11y<br/>chromium"] --> B["vite build"] --> S["production smoke<br/>vite preview"] --> D["deploy to<br/>GitHub Pages"] --> R["publish coverage +<br/>Playwright reports"]
 ```
 
-**CI (pull requests).** A `detect-changes` action inspects the diff and drives job fan-out: a changed module only runs its own unit job, and the 3-browser Playwright matrix only runs when UI or E2E files change. E2E selection is tag-based — changed paths are mapped to module tags by a unit-tested script (`scripts/detect-e2e-tags.mjs`), so a cart-only PR runs just the cart-tagged E2E and visual tests plus the cart a11y audit, while shared or config changes run everything. Coverage thresholds are enforced on every PR, and per-browser Playwright reports, the a11y report and coverage HTML are uploaded as artifacts. Concurrency groups cancel superseded runs. These jobs are wired as required status checks, so a red run blocks the merge.
+**CI (pull requests).** A `detect-changes` action inspects the diff and drives job fan-out: a changed module only runs its own unit job, and the 3-browser Playwright matrix only runs when UI or E2E files change. E2E selection is tag-based — changed paths are mapped to module tags by a unit-tested script (`scripts/detect-e2e-tags.mjs`), so a cart-only PR runs just the cart-tagged E2E and visual tests plus the cart a11y audit, while shared or config changes run everything. Coverage thresholds are enforced on every PR, and per-browser Playwright reports, the a11y report and coverage HTML are uploaded as artifacts. Superseded pull-request runs are cancelled; release deployments are never interrupted. These jobs are wired as required status checks, so a red run blocks the merge.
 
 **CD (push to `main`).** The pipeline re-runs unit coverage, the full 3-browser E2E suite, the accessibility audits, and the Vite build. Only then does the production smoke test run against the built output — the deploy step cannot execute if it fails. Coverage and Playwright reports are copied into the deployed site, so every release publishes its own test evidence at `/coverage/` and `/test-reports/`.
 
@@ -136,6 +136,7 @@ Workflows: [`.github/workflows/ci.yml`](.github/workflows/ci.yml) · [`.github/w
 | Local SVG assets | placehold.co / CDN images | No third-party runtime dependency; CI and users see byte-identical pages |
 | Simulated payment with explicit TEST MODE messaging | Fake it silently | Keeps the demo honest without giving up the realistic UX |
 | Dependency updates applied deliberately | Scheduled Dependabot PRs | The Dependabot config is parked as `.github/dependabot.yml.example` — enabling it is a rename plus uncommenting; a demo repo doesn't need weekly update noise |
+| Deployments are never cancelled | `cancel-in-progress: true` everywhere | Pull-request checks cancel to save time, but a cancelled GitHub Pages deploy can leave a failed deployment behind |
 
 ## Known limitations and next steps
 

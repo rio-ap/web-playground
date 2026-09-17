@@ -1,7 +1,7 @@
 import { getProducts } from '../products.js';
 import { productCard } from './product-card.js';
 
-export function mountHome(app) {
+export function renderHome(app) {
   const featured = getProducts()
     .slice(0, 3)
     .map(productCard)
@@ -26,4 +26,4 @@ export function mountHome(app) {
   `;
 }
 
-export const homeView = { name: 'home', mount: mountHome };
+export const homeView = { name: 'home', mount: renderHome };

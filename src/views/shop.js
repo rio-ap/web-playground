@@ -1,7 +1,7 @@
 import { getProducts } from '../products.js';
 import { productCard } from './product-card.js';
 
-export function mountShop(app) {
+export function renderShop(app) {
   const grid = getProducts().map(productCard).join('');
 
   app.innerHTML = `
@@ -10,4 +10,4 @@ export function mountShop(app) {
   `;
 }
 
-export const shopView = { name: 'shop', mount: mountShop };
+export const shopView = { name: 'shop', mount: renderShop };

@@ -171,6 +171,7 @@ describe('checkout review view', () => {
 
   it('summarises the shipping address, payment and items', () => {
     const html = mountWithCart(createReviewView);
+    const itemTestId = `data-testid="summary-item-${headphones.id}"`;
 
     expect(html).toContain('data-testid="checkout-review-page"');
     expect(html).toContain('data-testid="stepper-address" data-state="done"');
@@ -182,9 +183,16 @@ describe('checkout review view', () => {
     expect(html).toContain('data-testid="review-payment"');
     expect(html).toContain('Visa ending 4242');
     expect(html).toContain('data-testid="review-items"');
-    expect(html).toContain(`data-testid="summary-item-${headphones.id}"`);
+    expect(html).toContain(itemTestId);
+    expect(html.split(itemTestId)).toHaveLength(2);
     expect(html).toContain('data-action="place-order"');
     expect(html).toContain(`Place Order · ${formatPrice(subtotal)}`);
+  });
+
+  it('shows the tax row on the review summary', () => {
+    const html = mountWithCart(createReviewView);
+
+    expect(html).toContain('data-testid="summary-tax"');
   });
 
   it('uses the order total in the sidebar', () => {

@@ -34,7 +34,7 @@ export function createReviewView(getCart) {
             <h3 class="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2">Items</h3>
             <div data-testid="review-items">${itemList(cart)}</div>
           `)}
-          ${panel(`${orderSummary(cart)}
+          ${panel(`${orderSummary(cart, { tax: true, items: false })}
             <button
               data-action="place-order"
               data-testid="place-order-btn"

@@ -1,21 +1,5 @@
 import { getShipping } from '../../checkout-state.js';
-import { escapeHtml, orderSummary, panel, stepper } from './layout.js';
-
-function field({ id, testid, label, value = '', type = 'text', autocomplete = 'on' }) {
-  return `
-    <div>
-      <label for="${id}" class="block text-sm font-medium text-gray-700 mb-1">${label}</label>
-      <input
-        id="${id}"
-        data-testid="${testid}"
-        type="${type}"
-        autocomplete="${autocomplete}"
-        value="${escapeHtml(value)}"
-        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
-      <p data-testid="${testid.replace('-input', '-error')}" class="text-red-600 text-sm mt-1 hidden"></p>
-    </div>`;
-}
+import { field, orderSummary, panel, stepper } from './layout.js';
 
 export function createAddressView(getCart) {
   return {

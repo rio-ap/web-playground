@@ -20,6 +20,22 @@ export function panel(content, className = '') {
   return `<div class="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 ${className}">${content}</div>`;
 }
 
+export function field({ id, testid, label, value = '', type = 'text', autocomplete = 'on' }) {
+  return `
+    <div>
+      <label for="${id}" class="block text-sm font-medium text-gray-700 mb-1">${label}</label>
+      <input
+        id="${id}"
+        data-testid="${testid}"
+        type="${type}"
+        autocomplete="${autocomplete}"
+        value="${escapeHtml(value)}"
+        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+      <p data-testid="${testid.replace('-input', '-error')}" class="text-red-600 text-sm mt-1 hidden"></p>
+    </div>`;
+}
+
 export function stepper(activeStep) {
   const items = STEPS.map(({ step, key, label }) => {
     const state = step === activeStep ? 'active' : step < activeStep ? 'done' : 'upcoming';
@@ -54,15 +70,18 @@ export function itemList(cart) {
   return `<ul data-testid="summary-items" class="divide-y divide-gray-100">${items}</ul>`;
 }
 
-export function orderSummary(cart, { tax = false } = {}) {
+export function orderSummary(cart, { tax = false, items = true } = {}) {
   const subtotal = formatPrice(getSubtotal(cart));
+  const itemsMarkup = items
+    ? cart.length === 0
+      ? '<p data-testid="summary-empty" class="text-sm text-gray-500 py-3">Your cart is empty.</p>'
+      : itemList(cart)
+    : '';
 
   return `
     <aside data-testid="order-summary" aria-label="Order summary">
       <h2 class="text-lg font-semibold text-gray-900 mb-1">Order summary</h2>
-      ${cart.length === 0
-        ? '<p data-testid="summary-empty" class="text-sm text-gray-500 py-3">Your cart is empty.</p>'
-        : itemList(cart)}
+      ${itemsMarkup}
       <dl class="mt-4 space-y-2 border-t border-gray-200 pt-4">
         <div class="flex justify-between text-sm text-gray-600"><dt>Subtotal</dt><dd data-testid="summary-subtotal">${subtotal}</dd></div>
         <div class="flex justify-between text-sm text-gray-600"><dt>Shipping</dt><dd>Free</dd></div>

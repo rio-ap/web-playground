@@ -2,7 +2,10 @@ import { test, expect } from '@playwright/test';
 import { HomePage } from '../pages/HomePage';
 import { ProductGridPage } from '../pages/ProductGridPage';
 import { CartModalPage } from '../pages/CartModalPage';
-import { CheckoutPage } from '../pages/CheckoutPage';
+import { CheckoutAddressPage } from '../pages/CheckoutAddressPage';
+import { CheckoutPaymentPage } from '../pages/CheckoutPaymentPage';
+import { CheckoutReviewPage } from '../pages/CheckoutReviewPage';
+import { ConfirmationPage } from '../pages/ConfirmationPage';
 import { validShipping, validPayment } from '../helpers/test-data';
 
 test.describe('Visual Regression', () => {
@@ -45,42 +48,64 @@ test.describe('Visual Regression', () => {
     await expect(page.locator('[data-testid="cart-modal"]')).toHaveScreenshot('cart-modal-with-items.png');
   });
 
-  test('checkout — shipping step baseline', { tag: '@checkout' }, async ({ page }) => {
+  test('checkout address — full page baseline', { tag: '@checkout' }, async ({ page }) => {
     const products = new ProductGridPage(page);
     const cart = new CartModalPage(page);
     await products.goto();
     await products.addToCart(1);
     await cart.open();
     await cart.checkout();
-    await expect(page.locator('[data-testid="checkout-form"]')).toHaveScreenshot('checkout-shipping.png');
+    await new CheckoutAddressPage(page).expectVisible();
+    await expect(page).toHaveScreenshot('checkout-address-full-page.png', { fullPage: true, timeout: 30000 });
   });
 
-  test('checkout — payment step baseline', { tag: '@checkout' }, async ({ page }) => {
+  test('checkout payment — full page baseline', { tag: '@checkout' }, async ({ page }) => {
     const products = new ProductGridPage(page);
     const cart = new CartModalPage(page);
-    const checkout = new CheckoutPage(page);
+    const address = new CheckoutAddressPage(page);
     await products.goto();
     await products.addToCart(1);
     await cart.open();
     await cart.checkout();
-    await checkout.fillShipping(validShipping);
-    await checkout.expectPaymentStep();
-    await expect(page.locator('[data-testid="checkout-form"]')).toHaveScreenshot('checkout-payment.png');
+    await address.submit(validShipping);
+    await new CheckoutPaymentPage(page).expectVisible();
+    await expect(page).toHaveScreenshot('checkout-payment-full-page.png', { fullPage: true, timeout: 30000 });
   });
 
-  test('checkout — order confirmation baseline', { tag: '@checkout' }, async ({ page }) => {
+  test('checkout review — full page baseline', { tag: '@checkout' }, async ({ page }) => {
     const products = new ProductGridPage(page);
     const cart = new CartModalPage(page);
-    const checkout = new CheckoutPage(page);
+    const address = new CheckoutAddressPage(page);
+    const payment = new CheckoutPaymentPage(page);
     await products.goto();
     await products.addToCart(1);
     await cart.open();
     await cart.checkout();
-    await checkout.fillShipping(validShipping);
-    await checkout.fillPayment(validPayment);
-    await checkout.expectOrderConfirmed();
-    await expect(page.locator('[data-testid="checkout-form"]')).toHaveScreenshot('order-confirmation.png', {
-      mask: [page.locator('[data-testid="order-number"]')],
+    await address.submit(validShipping);
+    await payment.submit(validPayment);
+    await new CheckoutReviewPage(page).expectVisible();
+    await expect(page).toHaveScreenshot('checkout-review-full-page.png', { fullPage: true, timeout: 30000 });
+  });
+
+  test('confirmation — full page baseline', { tag: '@checkout' }, async ({ page }) => {
+    const products = new ProductGridPage(page);
+    const cart = new CartModalPage(page);
+    const address = new CheckoutAddressPage(page);
+    const payment = new CheckoutPaymentPage(page);
+    const review = new CheckoutReviewPage(page);
+    const confirmation = new ConfirmationPage(page);
+    await products.goto();
+    await products.addToCart(1);
+    await cart.open();
+    await cart.checkout();
+    await address.submit(validShipping);
+    await payment.submit(validPayment);
+    await review.placeOrder();
+    await confirmation.expectConfirmed();
+    await expect(page).toHaveScreenshot('confirmation-full-page.png', {
+      fullPage: true,
+      timeout: 30000,
+      mask: [confirmation.orderNumber],
       maskColor: '#000000',
     });
   });

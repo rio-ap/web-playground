@@ -6,7 +6,7 @@ on:
 
 concurrency:
   group: cd-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 permissions:
   contents: read
@@ -38,10 +38,7 @@ jobs:
         run: npm run build
 
       - name: Copy coverage to dist
-        run: |
-          mkdir -p dist/coverage
-          cp -r coverage/* dist/coverage/
-          rm -f dist/coverage/coverage-summary.json
+        run: mkdir -p dist/coverage && cp -r coverage/* dist/coverage/
 
       - name: Copy test reports to dist
         run: mkdir -p dist/test-reports && cp -r playwright-report/* dist/test-reports/

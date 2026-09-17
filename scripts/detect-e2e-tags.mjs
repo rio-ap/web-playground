@@ -1,12 +1,20 @@
 #!/usr/bin/env node
 import { readFileSync } from 'node:fs';
 
-export const ALL_TAGS = ['@products', '@cart', '@checkout'];
+export const ALL_TAGS = ['@home', '@shop', '@cart', '@checkout'];
 
 const MODULE_RULES = [
   {
-    tag: '@products',
-    patterns: [/^src\/products\.js$/, /^tests\/e2e\/product-grid\.spec\.ts$/],
+    tag: '@home',
+    patterns: [/^src\/views\/home\.js$/, /^tests\/e2e\/home\.spec\.ts$/],
+  },
+  {
+    tag: '@shop',
+    patterns: [
+      /^src\/products\.js$/,
+      /^src\/views\/shop\.js$/,
+      /^tests\/e2e\/product-grid\.spec\.ts$/,
+    ],
   },
   {
     tag: '@cart',
@@ -29,6 +37,9 @@ const MODULE_RULES = [
 
 const SHARED_PATTERNS = [
   /^src\/main\.js$/,
+  /^src\/router\.js$/,
+  /^src\/effects\.js$/,
+  /^src\/views\/product-card\.js$/,
   /^src\/style\.css$/,
   /^index\.html$/,
   /^public\//,

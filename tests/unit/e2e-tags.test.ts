@@ -4,13 +4,19 @@ import { tagsForPaths, ALL_TAGS } from '../../scripts/detect-e2e-tags.mjs';
 
 describe('tagsForPaths', () => {
   it('maps a single module source file to its tag', () => {
-    expect(tagsForPaths(['src/products.js'])).toEqual(['@products']);
+    expect(tagsForPaths(['src/products.js'])).toEqual(['@shop']);
     expect(tagsForPaths(['src/cart.js'])).toEqual(['@cart']);
     expect(tagsForPaths(['src/checkout.js'])).toEqual(['@checkout']);
   });
 
+  it('maps home and shop view sources to their tags', () => {
+    expect(tagsForPaths(['src/views/home.js'])).toEqual(['@home']);
+    expect(tagsForPaths(['src/views/shop.js'])).toEqual(['@shop']);
+  });
+
   it('maps module spec and component files to their tags', () => {
-    expect(tagsForPaths(['tests/e2e/product-grid.spec.ts'])).toEqual(['@products']);
+    expect(tagsForPaths(['tests/e2e/home.spec.ts'])).toEqual(['@home']);
+    expect(tagsForPaths(['tests/e2e/product-grid.spec.ts'])).toEqual(['@shop']);
     expect(tagsForPaths(['tests/e2e/cart-flow.spec.ts'])).toEqual(['@cart']);
     expect(tagsForPaths(['tests/e2e/add-to-cart-feedback.spec.ts'])).toEqual(['@cart']);
     expect(tagsForPaths(['tests/e2e/checkout-flow.spec.ts'])).toEqual(['@checkout']);
@@ -25,6 +31,9 @@ describe('tagsForPaths', () => {
   it('returns all tags when a shared file changed', () => {
     const sharedPaths = [
       'src/main.js',
+      'src/router.js',
+      'src/effects.js',
+      'src/views/product-card.js',
       'src/style.css',
       'index.html',
       'public/favicon.svg',
@@ -74,6 +83,6 @@ describe('detect-e2e-tags CLI', () => {
   });
 
   it('prints all tags for shared input', () => {
-    expect(run('index.html\n')).toBe('@products|@cart|@checkout');
+    expect(run('index.html\n')).toBe('@home|@shop|@cart|@checkout');
   });
 });

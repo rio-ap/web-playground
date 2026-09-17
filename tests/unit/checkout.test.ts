@@ -37,6 +37,18 @@ describe('validateShippingInfo', () => {
     const errors = validateShippingInfo({ name: '   ', address: '123 St', city: 'NYC', zip: '10001', email: 'a@b.com' });
     expect(errors.name).toBeDefined();
   });
+
+  it('should reject an email without a valid domain', () => {
+    for (const email of ['plainstring', 'foo@bar', 'foo@', '@bar.com', 'foo bar@baz.com']) {
+      const errors = validateShippingInfo({ name: 'John', address: '123 St', city: 'NYC', zip: '10001', email });
+      expect(errors.email, email).toBeDefined();
+    }
+  });
+
+  it('should reject a zip code containing non-digits', () => {
+    const errors = validateShippingInfo({ name: 'John', address: '123 St', city: 'NYC', zip: '12a45', email: 'a@b.com' });
+    expect(errors.zip).toBeDefined();
+  });
 });
 
 describe('validatePaymentInfo', () => {
@@ -93,6 +105,13 @@ describe('validatePaymentInfo', () => {
   it('should reject invalid expiry format', () => {
     const errors = validatePaymentInfo({ cardNumber: '4111111111111111', expiry: '12-28', cvv: '123' });
     expect(errors.expiry).toBeDefined();
+  });
+
+  it('should reject an expiry month outside 01-12', () => {
+    for (const expiry of ['00/28', '13/28', '99/28']) {
+      const errors = validatePaymentInfo({ cardNumber: '4111111111111111', expiry, cvv: '123' });
+      expect(errors.expiry, expiry).toBeDefined();
+    }
   });
 
   it('should reject invalid CVV length', () => {

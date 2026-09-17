@@ -30,6 +30,15 @@ test.describe('Checkout Flow', { tag: '@checkout' }, () => {
     await expect(page).toHaveURL(/#\/checkout\/address$/);
   });
 
+  test('should reject an invalid email and a non-numeric zip', async ({ page }) => {
+    const address = new CheckoutAddressPage(page);
+    await address.fill({ ...validShipping, email: 'not-an-email', zip: '12a45' });
+    await address.continueBtn.click();
+    await expect(page).toHaveURL(/#\/checkout\/address$/);
+    await expect(address.emailError).toBeVisible();
+    await expect(address.zipError).toBeVisible();
+  });
+
   test('should proceed to the payment page after valid shipping info', async ({ page }) => {
     const address = new CheckoutAddressPage(page);
     const payment = new CheckoutPaymentPage(page);
@@ -45,6 +54,16 @@ test.describe('Checkout Flow', { tag: '@checkout' }, () => {
     await payment.reviewBtn.click();
     await payment.expectErrors();
     await expect(page).toHaveURL(/#\/checkout\/payment$/);
+  });
+
+  test('should reject an out-of-range expiry month', async ({ page }) => {
+    const address = new CheckoutAddressPage(page);
+    const payment = new CheckoutPaymentPage(page);
+    await address.submit(validShipping);
+    await payment.fill({ ...validPayment, expiry: '1328' });
+    await payment.reviewBtn.click();
+    await expect(page).toHaveURL(/#\/checkout\/payment$/);
+    await expect(payment.expiryError).toBeVisible();
   });
 
   test('should format the card number and expiry while typing', async ({ page }) => {

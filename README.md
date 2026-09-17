@@ -65,7 +65,7 @@ Design decisions worth noting:
 - every spec is tagged by module (`@home`, `@shop`, `@cart`, `@checkout`) — that's what lets CI run a targeted slice for a PR instead of the whole suite
 - the smoke layer runs against the **built artefact**, not the dev server, so base-path and asset problems fail the pipeline before anything ships
 - visual baselines are font-sensitive, so the font stack is pinned rather than left to the system — otherwise the same page is 1017px tall locally and 977px on the runner
-- 110 unit tests (including the CI path-to-tag mapping), 162 Playwright runs across three browsers (54 each), plus 7 chromium a11y audits and 1 smoke test — fast enough to run on every PR
+- 113 unit tests (including the CI path-to-tag mapping), 168 Playwright runs across three browsers (56 each), plus 7 chromium a11y audits and 1 smoke test — fast enough to run on every PR
 
 ## CI/CD design
 

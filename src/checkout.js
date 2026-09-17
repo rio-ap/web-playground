@@ -6,8 +6,16 @@ export function validateShippingInfo(data) {
   if (!data.name?.trim()) errors.name = 'Name is required';
   if (!data.address?.trim()) errors.address = 'Address is required';
   if (!data.city?.trim()) errors.city = 'City is required';
-  if (!data.zip?.trim()) errors.zip = 'ZIP code is required';
-  if (!data.email?.trim()) errors.email = 'Email is required';
+  if (!data.zip?.trim()) {
+    errors.zip = 'ZIP code is required';
+  } else if (!/^\d+$/.test(data.zip.trim())) {
+    errors.zip = 'ZIP code must be numeric';
+  }
+  if (!data.email?.trim()) {
+    errors.email = 'Email is required';
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(data.email.trim())) {
+    errors.email = 'Enter a valid email address';
+  }
   return errors;
 }
 
@@ -26,6 +34,9 @@ export function validatePaymentInfo(data) {
     errors.expiry = 'Expiry date is required';
   } else if (!/^\d{2}\/\d{2}$/.test(data.expiry)) {
     errors.expiry = 'Use MM/YY format';
+  } else {
+    const month = Number(data.expiry.slice(0, 2));
+    if (month < 1 || month > 12) errors.expiry = 'Invalid expiry month';
   }
 
   if (!data.cvv?.trim()) {

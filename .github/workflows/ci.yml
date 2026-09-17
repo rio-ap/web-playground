@@ -18,7 +18,6 @@ jobs:
       products: ${{ steps.check.outputs.products }}
       cart: ${{ steps.check.outputs.cart }}
       checkout: ${{ steps.check.outputs.checkout }}
-      ui: ${{ steps.check.outputs.ui }}
       config: ${{ steps.check.outputs.config }}
       e2e: ${{ steps.check.outputs.e2e }}
       e2e_tags: ${{ steps.check.outputs.e2e_tags }}
@@ -100,6 +99,33 @@ jobs:
         with:
           name: playwright-report-${{ matrix.browser }}
           path: playwright-report/
+          retention-days: 7
+
+  smoke:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.e2e == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+      - name: Build
+        run: npm run build
+      - name: Production smoke test
+        run: npm run test:smoke
+        env:
+          CI: true
+      - name: Upload smoke report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-report
+          path: playwright-report-smoke/
           retention-days: 7
 
   a11y-tests:

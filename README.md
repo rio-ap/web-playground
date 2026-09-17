@@ -149,7 +149,7 @@ The application code was built with AI assistance. The test strategy, automation
 
 ## Author
 
-**Rio Anggara Pratama** — Senior SDET, 10+ years in QA engineering.
+**Rio Anggara Pratama** — Senior SDET with 10+ years in software engineering: test infrastructure, automation frameworks, and CI/CD.
 
 - LinkedIn: [linkedin.com/in/rio-anggara](https://www.linkedin.com/in/rio-anggara/)
 - GitHub: [@rio-ap](https://github.com/rio-ap)

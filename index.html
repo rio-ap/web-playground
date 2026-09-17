@@ -53,12 +53,12 @@
     <div id="app"></div>
   </main>
 
-  <div data-testid="cart-modal" class="fixed inset-0 z-50 hidden" aria-modal="true" role="dialog">
+  <div data-testid="cart-modal" class="fixed inset-0 z-50 hidden" aria-modal="true" role="dialog" aria-labelledby="cart-modal-title">
     <div class="fixed inset-0 bg-black/50 transition-opacity" data-testid="cart-overlay"></div>
 
     <div class="fixed inset-y-0 right-0 w-full max-w-lg bg-white shadow-xl flex flex-col">
       <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-        <h2 class="text-lg font-semibold text-gray-900" data-testid="cart-modal-title">Your Cart</h2>
+        <h2 class="text-lg font-semibold text-gray-900" id="cart-modal-title" data-testid="cart-modal-title">Your Cart</h2>
         <button data-testid="cart-close-btn" class="text-gray-400 hover:text-gray-600 text-2xl leading-none cursor-pointer">&times;</button>
       </div>
 

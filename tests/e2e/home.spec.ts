@@ -30,4 +30,11 @@ test.describe('Home', { tag: '@home' }, () => {
     await cart.expectBadgeCount(1);
     await expect(page.locator('[data-testid="toast"]')).toHaveText('Wireless Headphones added to cart');
   });
+
+  test('unknown routes fall back to home', async ({ page }) => {
+    await page.goto('/#/does-not-exist');
+    await expect(page).toHaveURL(/#\/$/);
+    await expect(page.locator('[data-testid="home-view"]')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Welcome to Trazire Mart' })).toBeVisible();
+  });
 });

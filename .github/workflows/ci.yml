@@ -99,6 +99,31 @@ jobs:
           path: playwright-report/
           retention-days: 7
 
+  a11y-tests:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.e2e == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+      - name: Run accessibility audits
+        run: npx playwright test -c playwright.a11y.config.ts --grep "${{ needs.detect-changes.outputs.e2e_tags }}"
+        env:
+          CI: true
+      - name: Upload a11y report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: a11y-report
+          path: playwright-report-a11y/
+          retention-days: 7
+
   coverage:
     runs-on: ubuntu-latest
     steps:

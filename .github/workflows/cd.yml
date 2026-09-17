@@ -36,6 +36,9 @@ jobs:
       - name: E2E Tests
         run: npx playwright test
 
+      - name: Accessibility Audits
+        run: npm run test:a11y
+
       - name: Build
         run: npm run build
 

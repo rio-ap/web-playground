@@ -5,9 +5,9 @@ A small, self-contained e-commerce SPA (product grid, cart, multi-step checkout)
 [![CI](https://github.com/rio-ap/web-playground/actions/workflows/ci.yml/badge.svg)](https://github.com/rio-ap/web-playground/actions/workflows/ci.yml)
 [![CD](https://github.com/rio-ap/web-playground/actions/workflows/cd.yml/badge.svg)](https://github.com/rio-ap/web-playground/actions/workflows/cd.yml)
 
-**Live demo:** [https://rio-ap.github.io/web-playground/](https://rio-ap.github.io/web-playground/)
+**Live demo:** [https://playground.trazire.com/web-playground/](https://playground.trazire.com/web-playground/)
 
-**Test reports:** [unit coverage](https://rio-ap.github.io/web-playground/coverage/) · [Playwright report](https://rio-ap.github.io/web-playground/test-reports/)
+**Test reports:** [unit coverage](https://playground.trazire.com/web-playground/coverage/) · [Playwright report](https://playground.trazire.com/web-playground/test-reports/)
 
 ## What this is
 

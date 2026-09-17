@@ -231,13 +231,30 @@ document.addEventListener('click', (event) => {
   showToast(`${product.name} added to cart`);
 });
 
+function setFormattedValue(input, formatted) {
+  if (input.value === formatted) return;
+
+  const caret = input.selectionStart ?? formatted.length;
+  const digitsBeforeCaret = input.value.slice(0, caret).replace(/\D/g, '').length;
+
+  input.value = formatted;
+
+  let position = 0;
+  let seen = 0;
+  while (position < formatted.length && seen < digitsBeforeCaret) {
+    if (/\d/.test(formatted[position])) seen += 1;
+    position += 1;
+  }
+  input.setSelectionRange(position, position);
+}
+
 document.addEventListener('input', (event) => {
   const input = event.target;
   if (!(input instanceof HTMLInputElement)) return;
   const testid = input.getAttribute('data-testid');
 
   if (testid === 'payment-card-input') {
-    input.value = formatCardNumber(input.value);
+    setFormattedValue(input, formatCardNumber(input.value));
     const brand = detectCardBrand(input.value);
     const chip = document.querySelector('[data-testid="card-brand"]');
     if (chip) {
@@ -248,7 +265,7 @@ document.addEventListener('input', (event) => {
   }
 
   if (testid === 'payment-expiry-input') {
-    input.value = formatExpiry(input.value);
+    setFormattedValue(input, formatExpiry(input.value));
   }
 });
 

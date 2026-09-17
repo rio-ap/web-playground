@@ -73,9 +73,14 @@ describe('formatExpiry', () => {
     expect(formatExpiry('12')).toBe('12');
   });
 
-  it('strips non-digits and caps at four digits', () => {
+  it('strips non-digits', () => {
     expect(formatExpiry('ab12cd28')).toBe('12/28');
-    expect(formatExpiry('122899')).toBe('12/28');
+  });
+
+  it('takes the last two digits of a pasted four-digit year', () => {
+    expect(formatExpiry('12/2028')).toBe('12/28');
+    expect(formatExpiry('122028')).toBe('12/28');
+    expect(formatExpiry('122899')).toBe('12/99');
   });
 
   it('returns an empty string for an empty value', () => {

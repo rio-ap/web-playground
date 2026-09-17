@@ -63,6 +63,26 @@ test.describe('Checkout Flow', { tag: '@checkout' }, () => {
 
     await payment.expiryInput.fill('1228');
     await expect(payment.expiryInput).toHaveValue('12/28');
+
+    await payment.expiryInput.fill('12/2028');
+    await expect(payment.expiryInput).toHaveValue('12/28');
+  });
+
+  test('should keep the caret steady while editing the card number', async ({ page }) => {
+    const address = new CheckoutAddressPage(page);
+    const payment = new CheckoutPaymentPage(page);
+    await address.submit(validShipping);
+
+    await payment.cardInput.fill('4242424242424242');
+    await payment.cardInput.evaluate((el) => {
+      const input = el as HTMLInputElement;
+      input.focus();
+      input.setSelectionRange(4, 4);
+    });
+    await page.keyboard.type('9');
+
+    await expect(payment.cardInput).toHaveValue('4242 9424 2424 2424');
+    expect(await payment.cardInput.evaluate((el) => (el as HTMLInputElement).selectionStart)).toBe(6);
   });
 
   test('should accept an amex card through to review', async ({ page }) => {

@@ -29,9 +29,12 @@ export function formatCardNumber(number) {
 }
 
 export function formatExpiry(input) {
-  const digits = onlyDigits(input).slice(0, 4);
-  if (digits.length < 3) return digits;
-  return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+  const digits = onlyDigits(input);
+  if (digits.length === 0) return '';
+  const month = digits.slice(0, 2);
+  if (digits.length < 3) return month;
+  const year = digits.slice(2, 6);
+  return `${month}/${year.length === 4 ? year.slice(2) : year}`;
 }
 
 export function isCardNumberComplete(number, brand) {

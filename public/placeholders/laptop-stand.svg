@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 64 64" role="img" aria-label="Laptop stand placeholder">
+  <rect width="64" height="64" fill="#e2e8f0"/>
+  <g fill="none" stroke="#475569" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="18" y="10" width="28" height="19" rx="2"/>
+    <path d="M14 33h36"/>
+    <path d="M18 50h28"/>
+    <path d="M22 50l10-17M42 50L32 33"/>
+  </g>
+</svg>

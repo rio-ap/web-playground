@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 64 64" role="img" aria-label="USB-C hub placeholder">
+  <rect width="64" height="64" fill="#e2e8f0"/>
+  <g fill="none" stroke="#475569" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="6" y="22" width="34" height="20" rx="5"/>
+    <path d="M13 29h4M21 29h4M29 29h4"/>
+    <path d="M40 32h8a6 6 0 0 0 6-6v-1"/>
+    <rect x="50" y="17" width="8" height="10" rx="2"/>
+  </g>
+</svg>

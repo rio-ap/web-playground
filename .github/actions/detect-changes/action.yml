@@ -15,11 +15,8 @@ outputs:
   checkout:
     description: src/checkout.js or its test changed
     value: ${{ steps.check.outputs.checkout }}
-  ui:
-    description: index.html or Playwright test/config changed
-    value: ${{ steps.check.outputs.ui }}
   config:
-    description: package.json or vitest.config.mjs changed
+    description: package.json or vitest.config.js changed
     value: ${{ steps.check.outputs.config }}
   e2e:
     description: E2E-relevant changes were detected
@@ -43,9 +40,6 @@ runs:
         echo "products=$(echo "$CHANGED" | grep -qE '^src/products\.js$|^tests/unit/products\.test\.ts$' && echo true || echo false)" >> "$GITHUB_OUTPUT"
         echo "cart=$(echo "$CHANGED" | grep -qE '^src/cart\.js$|^tests/unit/cart\.test\.ts$' && echo true || echo false)" >> "$GITHUB_OUTPUT"
         echo "checkout=$(echo "$CHANGED" | grep -qE '^src/checkout\.js$|^tests/unit/checkout\.test\.ts$' && echo true || echo false)" >> "$GITHUB_OUTPUT"
-
-        # UI / E2E test triggers
-        echo "ui=$(echo "$CHANGED" | grep -qE '^index\.html$|^tests/e2e/|^tests/component/|^playwright\.config\.ts$' && echo true || echo false)" >> "$GITHUB_OUTPUT"
 
         # Config triggers (runs everything)
         echo "config=$(echo "$CHANGED" | grep -qE '^package\.json$|^vitest\.config\.js$' && echo true || echo false)" >> "$GITHUB_OUTPUT"

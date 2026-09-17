@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('production build smoke', () => {
-  test('serves the built app under the base path with all assets', async ({ page }) => {
+  test('serves the built app with all assets', async ({ page }) => {
     const consoleErrors: string[] = [];
     const failedRequests: string[] = [];
     const badResponses: string[] = [];
@@ -18,7 +18,7 @@ test.describe('production build smoke', () => {
     });
 
     await page.goto('/');
-    await expect(page).toHaveURL(/\/web-playground\/$/);
+    await expect(page).toHaveURL('http://localhost:4173/');
 
     await expect(page).toHaveTitle('Trazire Mart');
     await expect(page.locator('[data-testid="home-view"]')).toBeVisible();

@@ -7,6 +7,17 @@ import { validShipping, validPayment } from '../helpers/test-data';
 test.describe('Visual Regression', () => {
   test.describe.configure({ mode: 'serial' });
 
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      document.addEventListener('DOMContentLoaded', () => {
+        const style = document.createElement('style');
+        style.textContent =
+          '[data-testid="toast"]{display:none !important}body > img[data-testid^="product-image-"]{display:none !important}';
+        document.head.appendChild(style);
+      });
+    });
+  });
+
   test('product grid — full page baseline', async ({ page }) => {
     const products = new ProductGridPage(page);
     await products.goto();

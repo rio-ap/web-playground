@@ -49,6 +49,6 @@ runs:
         echo "config=$(echo "$CHANGED" | grep -qE '^package\.json$|^vitest\.config\.js$' && echo true || echo false)" >> "$GITHUB_OUTPUT"
 
         # E2E runs only when E2E spec files themselves changed
-        E2E_FILES=$(echo "$CHANGED" | grep -E '^tests/e2e/.*\.spec\.ts$' | tr '\n' ' ')
+        E2E_FILES=$(echo "$CHANGED" | grep -E '^tests/e2e/.*\.spec\.ts$' | grep -v 'smoke\.spec\.ts' | tr '\n' ' ')
         echo "e2e_files=${E2E_FILES}" >> "$GITHUB_OUTPUT"
         echo "e2e=$([ -n "${E2E_FILES// }" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"

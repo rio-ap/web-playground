@@ -6,4 +6,5 @@ coverage/
 .env
 test-results/
 playwright-report/
+playwright-report-smoke/
 playwright/.cache/

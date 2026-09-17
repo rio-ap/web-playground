@@ -135,6 +135,7 @@ Workflows: [`.github/workflows/ci.yml`](.github/workflows/ci.yml) · [`.github/w
 | Pinned font stack | System font stack | Removes cross-environment layout drift from visual tests (1017px vs 977px) |
 | Local SVG assets | placehold.co / CDN images | No third-party runtime dependency; CI and users see byte-identical pages |
 | Simulated payment with explicit TEST MODE messaging | Fake it silently | Keeps the demo honest without giving up the realistic UX |
+| Dependency updates applied deliberately | Scheduled Dependabot PRs | The Dependabot config is parked as `.github/dependabot.yml.example` — enabling it is a rename plus uncommenting; a demo repo doesn't need weekly update noise |
 
 ## Known limitations and next steps
 

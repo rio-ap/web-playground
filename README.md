@@ -1,6 +1,6 @@
-# ShopCart — a front-end test automation playground
+# Trazire Mart — a front-end test automation playground
 
-A small, self-contained e-commerce SPA (product grid, cart, multi-step checkout) built to be a stable target for practising front-end test automation — and a reference implementation for test architecture and CI/CD design.
+A small, self-contained e-commerce SPA (home landing, product catalog, cart drawer, routed multi-step checkout) built to be a stable target for practising front-end test automation — and a reference implementation for test architecture and CI/CD design.
 
 [![CI](https://github.com/rio-ap/web-playground/actions/workflows/ci.yml/badge.svg)](https://github.com/rio-ap/web-playground/actions/workflows/ci.yml)
 [![CD](https://github.com/rio-ap/web-playground/actions/workflows/cd.yml/badge.svg)](https://github.com/rio-ap/web-playground/actions/workflows/cd.yml)
@@ -11,8 +11,9 @@ A small, self-contained e-commerce SPA (product grid, cart, multi-step checkout)
 
 ## What this is
 
-The app does three things: lists six products, manages a cart, and runs a validated checkout flow. Everything beyond that exists to make automation honest and repeatable:
+The app does four things: lands on a welcome home page, lists six products in a shop catalog, manages a cart drawer, and runs a routed, validated checkout (address → payment → review → confirmation). Payments are simulated in-browser — card fields are validated and formatted by pure helpers, but nothing leaves the page. Everything beyond that exists to make automation honest and repeatable:
 
+- hash-based routing (`#/`, `#/shop`, `#/checkout/...`) with guard redirects, so deep links and back/forward behave predictably
 - every interactive element carries a `data-testid` — no brittle CSS or text selectors needed
 - business logic is pure and separated from the DOM, so it is unit-testable without a browser
 - no backend, no auth, no real payments, no third-party runtime dependencies
@@ -36,8 +37,9 @@ QA and SDET practitioners who want something more realistic than a todo list to 
 | Piece | Choice | Why |
 |-------|--------|-----|
 | App | Vanilla JS ES modules | No framework noise between the test and the browser |
-| Logic | `src/products.js`, `src/cart.js`, `src/checkout.js` | Pure functions — unit tests need no DOM |
-| Wiring | `src/main.js` | Only place that touches the DOM and app state |
+| Logic | `src/products.js`, `src/cart.js`, `src/checkout.js`, `src/payment.js`, `src/checkout-state.js` | Pure functions — unit tests need no DOM |
+| Views | `src/views/` (home, shop, checkout steps, confirmation) | Render functions unit-tested in Vitest and mounted by the router |
+| Wiring | `src/main.js`, `src/router.js` | App shell and hash router; the only modules bound to DOM events and app state |
 | Build | Vite 6 | Fast dev server; production bundle served from the repo's Pages sub-path |
 | Styling | Tailwind CSS 4 (`@tailwindcss/vite`) | Utility classes only; no runtime CSS |
 | Assets | Local SVG placeholders, local favicon, generated OG image | No CDN or third-party requests — CI and users see identical pages |
@@ -46,23 +48,24 @@ Additional details: a strict CSP meta policy, social/OG metadata, an add-to-cart
 
 ## Test architecture
 
-Six layers, each chosen because it catches something the others cannot:
+Each layer exists because it catches something the others cannot:
 
 | Layer | Tool | Scope |
 |-------|------|-------|
-| Unit | Vitest | Cart math, checkout validation, product helpers. Per-file coverage thresholds: 90% statements/functions/lines, 80% branches |
-| Component | Playwright (`setContent`) | Isolated UI fragments without the full app |
-| E2E | Playwright + Page Object Model | Full user flows (`tests/e2e/pages`) on Chromium, Firefox and WebKit |
-| Accessibility | `@axe-core/playwright` (own config, chromium) | Homepage, cart modal, shipping and payment steps — no critical or serious violations; runs as its own CI job |
-| Visual regression | Playwright screenshots | 5 screens × 3 browsers, baselines committed and generated on Linux |
+| Unit | Vitest | Cart math, checkout validation, payment/card helpers (`src/payment.js`), checkout drafts (`src/checkout-state.js`), product helpers, and view rendering. Coverage applies to pure modules and views; only `src/main.js`, `src/router.js` and `src/effects.js` are excluded as DOM/event-bound. Per-file thresholds: 90% statements/functions/lines, 80% branches |
+| Component | Playwright (`setContent`) | Isolated UI fragments without the full app (cart item, checkout form) |
+| E2E — home & shop | Playwright + Page Object Model | Landing page and catalog (`@home`, `@shop`) on Chromium, Firefox and WebKit |
+| E2E — cart & checkout | Playwright + Page Object Model | Cart drawer and routed checkout pages — address, payment, review, confirmation — plus route guards (`@cart`, `@checkout`) on all three browsers |
+| Accessibility | `@axe-core/playwright` (own config, chromium) | 7 audits: home, shop, cart drawer, and the four checkout pages — no critical or serious violations; runs as its own CI job |
+| Visual regression | Playwright screenshots | 7 screens × 3 browsers, baselines committed and generated on Linux |
 | Production smoke | Playwright against `vite preview` | Built output sanity: base path resolves, no console errors or failed requests, images decode, add-to-cart works |
 
 Design decisions worth noting:
 
-- every spec is tagged by module (`@products`, `@cart`, `@checkout`) — that's what lets CI run a targeted slice for a PR instead of the whole suite
+- every spec is tagged by module (`@home`, `@shop`, `@cart`, `@checkout`) — that's what lets CI run a targeted slice for a PR instead of the whole suite
 - the smoke layer runs against the **built artefact**, not the dev server, so base-path and asset problems fail the pipeline before anything ships
 - visual baselines are font-sensitive, so the font stack is pinned rather than left to the system — otherwise the same page is 1017px tall locally and 977px on the runner
-- 53 unit tests (including the CI path-to-tag mapping), 114 Playwright runs across three browsers (38 each), plus 4 chromium a11y audits — fast enough to run on every PR
+- 110 unit tests (including the CI path-to-tag mapping), 159 Playwright runs across three browsers (53 each), plus 7 chromium a11y audits and 1 smoke test — fast enough to run on every PR
 
 ## CI/CD design
 
@@ -84,7 +87,7 @@ flowchart LR
   M([Push to main]) --> C["coverage +<br/>per-file thresholds"] --> E["playwright<br/>3 browsers"] --> A["a11y<br/>chromium"] --> B["vite build"] --> S["production smoke<br/>vite preview"] --> D["deploy to<br/>GitHub Pages"] --> R["publish coverage +<br/>Playwright reports"]
 ```
 
-**CI (pull requests).** A `detect-changes` action inspects the diff and drives job fan-out: a changed module only runs its own unit job, and the 3-browser Playwright matrix only runs when UI or E2E files change. E2E selection is tag-based — changed paths are mapped to module tags (`@products`, `@cart`, `@checkout`), so a cart-only PR runs just the cart-tagged E2E and visual tests plus the cart a11y audit in its own chromium job, while shared or config changes run everything. Coverage thresholds are enforced on every PR, and per-browser Playwright reports, the a11y report and coverage HTML are uploaded as artifacts. Concurrency groups cancel superseded runs. These jobs are wired as required status checks, so a red run blocks the merge.
+**CI (pull requests).** A `detect-changes` action inspects the diff and drives job fan-out: a changed module only runs its own unit job, and the 3-browser Playwright matrix only runs when UI or E2E files change. E2E selection is tag-based — changed paths are mapped to module tags (`@home`, `@shop`, `@cart`, `@checkout`), so a cart-only PR runs just the cart-tagged E2E and visual tests plus the cart a11y audit in its own chromium job, while shared or config changes run everything. Coverage thresholds are enforced on every PR, and per-browser Playwright reports, the a11y report and coverage HTML are uploaded as artifacts. Concurrency groups cancel superseded runs. These jobs are wired as required status checks, so a red run blocks the merge.
 
 **CD (push to `main`).** The pipeline re-runs unit coverage, the full 3-browser E2E suite, the accessibility audits, and the Vite build. Only then does the production smoke test run against the built output — the deploy step cannot execute if it fails. Coverage and Playwright reports are copied into the deployed site, so every release publishes its own test evidence at `/coverage/` and `/test-reports/`.
 

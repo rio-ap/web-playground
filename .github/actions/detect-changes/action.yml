@@ -33,8 +33,10 @@ runs:
   steps:
     - shell: bash
       id: check
+      env:
+        BASE_REF: ${{ inputs.base-ref }}
       run: |
-        BASE="${{ inputs.base-ref }}"
+        BASE="$BASE_REF"
         CHANGED=$(git diff --name-only "origin/${BASE}...HEAD" 2>/dev/null || echo "")
 
         # Per-module unit test triggers

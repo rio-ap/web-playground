@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { ProductGridPage } from '../pages/ProductGridPage';
-import { CartModalPage } from '../pages/CartModalPage';
-import { CheckoutPage } from '../pages/CheckoutPage';
-import { validShipping } from '../helpers/test-data';
+import { ProductGridPage } from '../e2e/pages/ProductGridPage';
+import { CartModalPage } from '../e2e/pages/CartModalPage';
+import { CheckoutPage } from '../e2e/pages/CheckoutPage';
+import { validShipping } from '../e2e/helpers/test-data';
 
 test.describe('Accessibility Audits', () => {
   test.describe.configure({ mode: 'serial' });

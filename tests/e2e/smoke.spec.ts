@@ -43,6 +43,12 @@ test.describe('production build smoke', () => {
     await page.locator('[data-testid="add-to-cart-btn-1"]').click();
     await expect(page.locator('[data-testid="cart-badge"]')).toHaveText('1');
 
+    await page.locator('[data-testid="cart-toggle-btn"]').click();
+    await page.locator('[data-testid="checkout-btn"]').click();
+    await expect(page).toHaveURL(/#\/checkout\/address$/);
+    await expect(page.locator('[data-testid="checkout-address-page"]')).toBeVisible();
+    await expect(page.locator('[data-testid="order-summary"]')).toBeVisible();
+
     expect.soft(consoleErrors, 'console errors').toEqual([]);
     expect.soft(failedRequests, 'failed requests').toEqual([]);
     expect.soft(badResponses, 'responses with status >= 400').toEqual([]);

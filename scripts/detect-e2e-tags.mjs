@@ -40,7 +40,7 @@ const SHARED_PATTERNS = [
   /^package-lock\.json$/,
   /^tests\/e2e\/pages\//,
   /^tests\/e2e\/helpers\//,
-  /^tests\/e2e\/accessibility\//,
+  /^tests\/a11y\//,
   /^tests\/e2e\/visual\//,
   /^scripts\//,
   /^\.github\//,

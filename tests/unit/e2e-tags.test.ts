@@ -36,7 +36,7 @@ describe('tagsForPaths', () => {
       'package-lock.json',
       'tests/e2e/pages/CartModalPage.ts',
       'tests/e2e/helpers/test-data.ts',
-      'tests/e2e/accessibility/a11y.spec.ts',
+      'tests/a11y/a11y.spec.ts',
       'tests/e2e/visual/layout.spec.ts',
       'scripts/detect-e2e-tags.mjs',
       '.github/workflows/ci.yml',

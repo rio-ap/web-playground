@@ -2,7 +2,12 @@
 
 A fully interactive E-Commerce Shopping Cart single-page application built with vanilla JavaScript, Tailwind CSS, and TDD.
 
-**Live demo:** Deployed via GitHub Actions on push to `main` — see [.github/workflows/cd.yml](.github/workflows/cd.yml)
+[![CI](https://github.com/rio-ap/web-playground/actions/workflows/ci.yml/badge.svg)](https://github.com/rio-ap/web-playground/actions/workflows/ci.yml)
+[![CD](https://github.com/rio-ap/web-playground/actions/workflows/cd.yml/badge.svg)](https://github.com/rio-ap/web-playground/actions/workflows/cd.yml)
+
+**Live demo:** [https://rio-ap.github.io/web-playground/](https://rio-ap.github.io/web-playground/)
+
+**Test reports:** [unit coverage](https://rio-ap.github.io/web-playground/coverage/) · [Playwright report](https://rio-ap.github.io/web-playground/test-reports/)
 
 ## Tech Stack
 
@@ -20,7 +25,7 @@ All interactive elements use `data-testid` attributes for test selectors — no 
 
 ```bash
 # Clone the repo
-git clone https://github.com/<your-username>/web-playground.git
+git clone https://github.com/rio-ap/web-playground.git
 cd web-playground
 
 # Install dependencies
@@ -49,6 +54,10 @@ npm run test:watch
 
 # E2E + Component tests (Playwright)
 npm run test:e2e
+
+# Production-build smoke test (requires npm run build first)
+npm run build
+npm run test:smoke
 ```
 
 ### Test structure

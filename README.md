@@ -50,7 +50,7 @@ Six layers, each chosen because it catches something the others cannot:
 
 | Layer | Tool | Scope |
 |-------|------|-------|
-| Unit | Vitest | Cart math, checkout validation, product helpers. Coverage thresholds: 80% statements/functions/lines, 70% branches |
+| Unit | Vitest | Cart math, checkout validation, product helpers. Per-file coverage thresholds: 90% statements/functions/lines, 80% branches |
 | Component | Playwright (`setContent`) | Isolated UI fragments without the full app |
 | E2E | Playwright + Page Object Model | Full user flows (`tests/e2e/pages`) on Chromium, Firefox and WebKit |
 | Accessibility | `@axe-core/playwright` (own config, chromium) | Homepage, cart modal, shipping and payment steps — no critical or serious violations; runs as its own CI job |
@@ -66,20 +66,25 @@ Design decisions worth noting:
 
 ## CI/CD design
 
+**Pull request checks** — change-aware fan-out: a one-module PR only runs that module's tests.
+
 ```mermaid
-flowchart LR
-  subgraph CI["CI · pull requests"]
-    A[detect-changes] --> U["unit jobs · only for changed modules"]
-    A --> E["e2e matrix · chromium / firefox / webkit"]
-    A --> X["a11y audit · chromium"]
-    A --> V["coverage + thresholds"]
-  end
-  subgraph CD["CD · push to main"]
-    T[unit coverage] --> P["e2e · 3 browsers"] --> B[vite build] --> S["production smoke"] --> D["deploy to GitHub Pages"] --> R["publish coverage + Playwright reports"]
-  end
+flowchart TD
+  PR([Pull request]) --> DC["detect-changes<br/>diff → unit flags + module tags"]
+  DC --> U["unit jobs<br/>only for changed modules"]
+  DC --> E["e2e + visual<br/>chromium · firefox · webkit<br/>--grep module tags"]
+  DC --> A["a11y audit<br/>chromium"]
+  PR --> C["coverage<br/>per-file thresholds"]
 ```
 
-**CI (pull requests).** A `detect-changes` action inspects the diff and drives job fan-out: a changed module only runs its own unit job, and the 3-browser Playwright matrix only runs when UI or E2E files change. E2E selection is tag-based — changed paths are mapped to module tags (`@products`, `@cart`, `@checkout`), so a cart-only PR runs just the cart-tagged E2E and visual tests plus the cart a11y audit in its own chromium job, while shared or config changes run everything. Coverage thresholds are enforced on every PR, and per-browser Playwright reports, the a11y report and coverage HTML are uploaded as artifacts. Concurrency groups cancel superseded runs.
+**Release pipeline** — every stage must pass before the next one; the deploy happens last.
+
+```mermaid
+flowchart LR
+  M([Push to main]) --> C["coverage +<br/>per-file thresholds"] --> E["playwright<br/>3 browsers"] --> A["a11y<br/>chromium"] --> B["vite build"] --> S["production smoke<br/>vite preview"] --> D["deploy to<br/>GitHub Pages"] --> R["publish coverage +<br/>Playwright reports"]
+```
+
+**CI (pull requests).** A `detect-changes` action inspects the diff and drives job fan-out: a changed module only runs its own unit job, and the 3-browser Playwright matrix only runs when UI or E2E files change. E2E selection is tag-based — changed paths are mapped to module tags (`@products`, `@cart`, `@checkout`), so a cart-only PR runs just the cart-tagged E2E and visual tests plus the cart a11y audit in its own chromium job, while shared or config changes run everything. Coverage thresholds are enforced on every PR, and per-browser Playwright reports, the a11y report and coverage HTML are uploaded as artifacts. Concurrency groups cancel superseded runs. These jobs are wired as required status checks, so a red run blocks the merge.
 
 **CD (push to `main`).** The pipeline re-runs unit coverage, the full 3-browser E2E suite, the accessibility audits, and the Vite build. Only then does the production smoke test run against the built output — the deploy step cannot execute if it fails. Coverage and Playwright reports are copied into the deployed site, so every release publishes its own test evidence at `/coverage/` and `/test-reports/`.
 

@@ -66,7 +66,7 @@ describe('parseVitestReport', () => {
 describe('parsePlaywrightReport', () => {
   it('counts flaky as passed and lists failed specs with suite path', () => {
     expect(parsePlaywrightReport(playwrightReport)).toEqual({
-      total: 4,
+      total: 5,
       passed: 3,
       failed: 1,
       skipped: 1,

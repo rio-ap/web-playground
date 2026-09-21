@@ -37,8 +37,7 @@ export function parsePlaywrightReport(report) {
   const passed = (stats.expected ?? 0) + (stats.flaky ?? 0);
   const failed = stats.unexpected ?? failedTests.length;
   const skipped = stats.skipped ?? 0;
-  const total = (stats.expected ?? 0) + (stats.unexpected ?? 0) + skipped;
-  return { total, passed, failed, skipped, failedTests };
+  return { total: passed + failed + skipped, passed, failed, skipped, failedTests };
 }
 
 export function parseTestReport(report, tool) {

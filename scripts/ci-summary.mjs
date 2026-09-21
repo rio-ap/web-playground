@@ -18,6 +18,13 @@ export function statusFor(result) {
     : { key: 'unknown', icon: '❔', label: 'Unknown' };
 }
 
+function normalizeFailureName(name) {
+  return String(name)
+    .replace(/`/g, "'")
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 export function renderStatusTable(rows, { title = 'Test results', commit = '' } = {}) {
   const heading = commit ? `${title} — \`${commit.slice(0, 7)}\`` : title;
   const hasTests = rows.some((row) => row.tests);
@@ -58,7 +65,7 @@ export function renderStatusTable(rows, { title = 'Test results', commit = '' } 
     for (const row of failing) {
       lines.push(`**${row.label}**`);
       for (const name of row.failures.slice(0, 15)) {
-        lines.push(`- \`${name}\``);
+        lines.push(`- \`${normalizeFailureName(name)}\``);
       }
       if (row.failures.length > 15) {
         lines.push(`- \`…and ${row.failures.length - 15} more\``);

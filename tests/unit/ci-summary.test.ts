@@ -125,6 +125,24 @@ describe('renderStatusTable', () => {
     expect(markdown).toContain('- `…and 2 more`');
     expect(markdown).not.toContain('**Unit · cart**');
   });
+
+  it('sanitizes backticks and newlines in failure names', () => {
+    const markdown = renderStatusTable(
+      [
+        {
+          label: 'E2E · firefox',
+          result: 'failure',
+          tests: { passed: 0, total: 1 },
+          failures: ['weird `title`\nsecond line'],
+        },
+      ],
+      { title: 'CI test results' },
+    );
+    expect(markdown).toContain("- `weird 'title' second line`");
+    expect(markdown.split('\n').filter((line) => line.startsWith('- '))).toEqual([
+      "- `weird 'title' second line`",
+    ]);
+  });
 });
 
 it('exposes the sticky comment marker', () => {
@@ -188,7 +206,7 @@ describe('buildSummary', () => {
 
   it('marks all browser rows skipped when the e2e job was skipped', () => {
     const jobs = { ...allPass, 'e2e-tests': { result: 'skipped' } };
-    const markdown = buildSummary({ jobs, e2e: [], commit: 'abc1234' });
+    const markdown = buildSummary({ jobs, commit: 'abc1234' });
     for (const browser of E2E_BROWSERS) {
       expect(markdown).toContain(`| E2E · ${browser} | ⏭️ Skipped |`);
     }
@@ -196,7 +214,7 @@ describe('buildSummary', () => {
 
   it('marks browser rows cancelled when the e2e job was cancelled', () => {
     const jobs = { ...allPass, 'e2e-tests': { result: 'cancelled' } };
-    const markdown = buildSummary({ jobs, e2e: [], commit: 'abc1234' });
+    const markdown = buildSummary({ jobs, commit: 'abc1234' });
     for (const browser of E2E_BROWSERS) {
       expect(markdown).toContain(`| E2E · ${browser} | ⚠️ Cancelled |`);
     }
@@ -205,9 +223,10 @@ describe('buildSummary', () => {
   it('shows unknown when a browser status file is missing', () => {
     const markdown = buildSummary({
       jobs: allPass,
-      e2e: [{ browser: 'chromium', result: 'success' }],
+      tests: { 'e2e-chromium': statsEntry('e2e-chromium') },
       commit: 'abc1234',
     });
+    expect(markdown).toContain('| E2E · chromium | ✅ Pass |');
     expect(markdown).toContain('| E2E · firefox | ❔ Unknown |');
     expect(markdown).toContain('| E2E · webkit | ❔ Unknown |');
   });

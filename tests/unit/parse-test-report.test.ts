@@ -149,9 +149,33 @@ describe('parse-test-report CLI', () => {
     expect(JSON.parse(readFileSync(outputPath, 'utf8')).reportMissing).toBe(true);
   });
 
+  it('writes normalized stats to stdout without an output file', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'parse-test-'));
+    const reportPath = join(dir, 'raw.json');
+    writeFileSync(reportPath, JSON.stringify(vitestReport));
+    const output = run([
+      '--tool',
+      'vitest',
+      '--id',
+      'products-unit',
+      '--report',
+      reportPath,
+      '--result',
+      'success',
+    ]);
+    const normalized = JSON.parse(output);
+    expect(normalized.id).toBe('products-unit');
+    expect(normalized.total).toBe(4);
+  });
+
   it('exits 2 for an unknown tool', () => {
-    expect(() =>
-      run(['--tool', 'mocha', '--id', 'x', '--report', '/dev/null']),
-    ).toThrow();
+    let error: { status?: number; stderr?: Buffer } | undefined;
+    try {
+      run(['--tool', 'mocha', '--id', 'x', '--report', '/dev/null']);
+    } catch (caught) {
+      error = caught as { status?: number; stderr?: Buffer };
+    }
+    expect(error?.status).toBe(2);
+    expect(error?.stderr?.toString()).toContain('unknown tool: mocha');
   });
 });

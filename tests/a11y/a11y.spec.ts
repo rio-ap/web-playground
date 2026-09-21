@@ -25,7 +25,7 @@ test.describe('Accessibility Audits', () => {
     await home.goto();
     await home.expectWelcome();
 
-    expect(true).toBe(false);
+    await expectNoViolations(page);
   });
 
   test('shop catalog — no critical or serious a11y violations', { tag: '@shop' }, async ({ page }) => {

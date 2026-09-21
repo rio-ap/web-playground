@@ -115,7 +115,13 @@ What a PR runs:
 | `README.md` | none | E2E, a11y and smoke skipped; coverage still runs |
 | `scripts/**`, `.github/**` | none | everything, since these are shared patterns |
 
-Workflows: [ci.yml](.github/workflows/ci.yml) · [cd.yml](.github/workflows/cd.yml) · Development notes: [HOWTO.md](HOWTO.md)
+### Base path and the custom domain
+
+GitHub Pages serves a project site under `/<repo>/`, but with a custom domain attached the same artifact is served at the domain root. `https://rio-ap.github.io/web-playground/` returns a 301 to `https://playground.trazire.com/`. Vite's default `base` is `/` and `vite.config.js` does not override it, so the built HTML references `/assets/*`, `/favicon.svg`, and `/og-image.png` from the root, and the report folders copied into `dist/` are reached at `/coverage/` and `/test-reports/`.
+
+A `base: '/web-playground/'` build would load the HTML at the root while every asset request goes to `/web-playground/assets/*`, which 404s. The smoke job catches this: it runs `vite preview` on `dist/` at `http://localhost:4173/`, and `smoke.spec.ts` fails on console errors, failed requests, or responses with status >= 400. `vite preview` serves at `/`, so a build that only works under a subpath fails before the deploy job runs.
+
+Workflows: [ci.yml](.github/workflows/ci.yml) · [cd.yml](.github/workflows/cd.yml)
 
 ## Decisions and trade-offs
 
@@ -126,12 +132,8 @@ Workflows: [ci.yml](.github/workflows/ci.yml) · [cd.yml](.github/workflows/cd.y
 | Pure views, events in `main.js` | Listeners inside each view | Views stay testable without a browser, and all the DOM wiring sits in one file. |
 | Per-file coverage | One global percentage | Globals let an untested file pass as long as the rest of the code is covered. |
 | Module tags for E2E | Run everything, or run changed spec files | Tags follow behavior instead of file paths, and PR runs stay short. |
-| a11y on Chromium only | Add it to the 3-browser matrix | Same signal for a third of the time. |
 | Smoke test gates the deploy | Trust the dev-server E2E | Only the built artifact catches wrong asset paths before users see them. |
-| Font stack pinned to Arial/Helvetica | System font stack | Removes layout drift between local and CI. See the 1017/977 note above. |
-| Custom domain at the root | Keep the `/web-playground/` project path | Pages drops the repository path once a custom domain is set; the old `github.io/repo/` URL 301s to the root. Assets and links have to be root-relative. |
-| Local SVG product images | Placeholder service or a CDN | No third-party requests at runtime, and CI sees exactly what users see. |
-| Payments simulated, clearly labelled | Fake the whole thing quietly | Looks like a checkout, says it isn't one. |
+| Custom domain at the root | Keep the `/web-playground/` project path | Pages serves the artifact at the domain root once a domain is attached, and the project URL 301s there. `vite.config.js` keeps Vite's default `base: '/'`; the production smoke job fails on any 404 before deploy. See "Base path and the custom domain" above. |
 | Dependabot parked at `dependabot.yml.example` | Weekly update PRs | This is a demo. I'd rather bump dependencies when there's a reason. Rename and uncomment to turn it on. |
 | Deploys never cancel | `cancel-in-progress: true` everywhere | A cancelled Pages deploy can leave a failed deployment. PR checks still cancel. |
 

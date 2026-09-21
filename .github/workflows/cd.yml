@@ -23,18 +23,23 @@ jobs:
       - run: npm ci
 
       - name: Unit Test Coverage
+        id: coverage
         run: npm run coverage
 
       - name: Install Playwright
+        id: playwright
         run: npx playwright install --with-deps
 
       - name: E2E Tests
+        id: e2e
         run: npx playwright test
 
       - name: Accessibility Audits
+        id: a11y
         run: npm run test:a11y
 
       - name: Build
+        id: build
         run: npm run build
 
       - name: Copy coverage to dist
@@ -44,12 +49,25 @@ jobs:
         run: mkdir -p dist/test-reports && cp -r playwright-report/* dist/test-reports/
 
       - name: Production Smoke Test
+        id: smoke
         run: npm run test:smoke
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: dist
+
+      - name: Write run summary
+        if: always()
+        env:
+          STEPS_JSON: >-
+            [{"label":"Unit coverage","result":"${{ steps.coverage.outcome }}"},
+             {"label":"Install Playwright","result":"${{ steps.playwright.outcome }}"},
+             {"label":"E2E tests","result":"${{ steps.e2e.outcome }}"},
+             {"label":"Accessibility audits","result":"${{ steps.a11y.outcome }}"},
+             {"label":"Build","result":"${{ steps.build.outcome }}"},
+             {"label":"Smoke test","result":"${{ steps.smoke.outcome }}"}]
+        run: printf '%s' "$STEPS_JSON" | node scripts/ci-summary.mjs --steps - --title "CD pipeline results" --commit "${{ github.sha }}" >> "$GITHUB_STEP_SUMMARY"
 
   deploy:
     needs: build
@@ -68,3 +86,21 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Write deploy summary
+        if: always()
+        env:
+          OUTCOME: ${{ steps.deployment.outcome }}
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          {
+            echo "### Deployment"
+            echo
+            if [ "$OUTCOME" = "success" ]; then
+              echo "✅ Deployed to $PAGE_URL"
+            elif [ "$OUTCOME" = "failure" ]; then
+              echo "❌ Deployment failed"
+            else
+              echo "⏭️ Deployment skipped"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

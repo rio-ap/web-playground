@@ -11,7 +11,7 @@ describe('addItem', () => {
   it('should increment quantity when product already in cart', () => {
     const cart = [{ product: { id: 1, name: 'A', price: 10 }, quantity: 2 }];
     const result = addItem(cart, { id: 1, name: 'A', price: 10 });
-    expect(result[0].quantity).toBe(3);
+    expect(result[0].quantity).toBe(4);
   });
 
   it('should not mutate the original cart array', () => {

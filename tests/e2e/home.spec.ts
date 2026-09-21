@@ -10,7 +10,7 @@ test.describe('Home', { tag: '@home' }, () => {
     await home.expectWelcome();
     await expect(home.startShoppingBtn).toBeVisible();
     await expect(home.featuredGrid).toBeVisible();
-    await expect(home.featuredCards).toHaveCount(3);
+    await expect(home.featuredCards).toHaveCount(4);
   });
 
   test('start shopping opens the shop with all six products', async ({ page }) => {

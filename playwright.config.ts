@@ -6,10 +6,16 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  reporter: [
-    ['html', { open: 'never' }],
-    ['list'],
-  ],
+  reporter: process.env.PLAYWRIGHT_JSON_OUTPUT_NAME
+    ? [
+        ['html', { open: 'never' }],
+        ['list'],
+        ['json'],
+      ]
+    : [
+        ['html', { open: 'never' }],
+        ['list'],
+      ],
   use: {
     baseURL: 'http://localhost:5173',
     screenshot: 'only-on-failure',

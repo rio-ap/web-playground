@@ -6,10 +6,16 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  reporter: [
-    ['html', { open: 'never', outputFolder: 'playwright-report-smoke' }],
-    ['list'],
-  ],
+  reporter: process.env.PLAYWRIGHT_JSON_OUTPUT_NAME
+    ? [
+        ['html', { open: 'never', outputFolder: 'playwright-report-smoke' }],
+        ['list'],
+        ['json'],
+      ]
+    : [
+        ['html', { open: 'never', outputFolder: 'playwright-report-smoke' }],
+        ['list'],
+      ],
   use: {
     baseURL: 'http://localhost:4173/',
     screenshot: 'only-on-failure',

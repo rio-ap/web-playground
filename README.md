@@ -2,7 +2,7 @@
 
 A small e-commerce demo: home page, six products, a cart drawer, and a checkout with validation. No backend, no accounts, no real payments. Data lives in memory and disappears when you reload.
 
-I built this as a target for front-end automation practice, and as a place to put the test setup and CI/CD pipeline I'd want on a real project. The app stays small on purpose so the test code and the pipeline are the interesting part.
+I built it as a target for front-end automation practice and as a place to keep the test setup and CI/CD pipeline I'd want on a real project. The app stays small so the tests and pipeline stay readable.
 
 [![CI](https://github.com/rio-ap/web-playground/actions/workflows/ci.yml/badge.svg)](https://github.com/rio-ap/web-playground/actions/workflows/ci.yml)
 [![CD](https://github.com/rio-ap/web-playground/actions/workflows/cd.yml/badge.svg)](https://github.com/rio-ap/web-playground/actions/workflows/cd.yml)
@@ -14,8 +14,8 @@ I built this as a target for front-end automation practice, and as a place to pu
 ## What's in it
 
 - Home, shop, cart drawer, and a checkout split into address, payment, review, and confirmation
-- A `data-testid` on everything you'd want to click or read
-- Business logic as plain functions, with no DOM access
+- A `data-testid` on every element a test needs to click or assert
+- Business logic as plain functions with no DOM access
 - No CDNs or third-party requests. Product images, favicon, and the OG image are all local
 - Simulated payments: card formatting, brand detection, a `TEST MODE` label, and copy that says nothing is charged
 
@@ -23,13 +23,13 @@ Routes are hash-based: `#/`, `#/shop`, `#/checkout/address`, `#/checkout/payment
 
 ## Practising against it
 
-If you're writing front-end automation, this gives you:
+The app is a target for front-end automation practice:
 
 - stable selectors on a real DOM
-- user flows worth building page objects for
-- validation errors and route guards to test as negative cases
+- flows that justify page objects
+- validation errors and route guards as negative cases
 - pages for axe audits and screenshot comparison
-- a working pipeline you can read or copy
+- a pipeline you can read or copy
 
 ## App structure
 
@@ -48,20 +48,20 @@ Build: Vite 6. Styling: Tailwind 4, utility classes only. The production build g
 
 | Layer | Tool | What it covers |
 |-------|------|----------------|
-| Unit | Vitest | Cart math, checkout and payment rules, checkout state, view output, the CI path-to-tag mapping, and the CI report parsers and summary renderer |
+| Unit | Vitest | Cart math, checkout and payment rules, checkout state, view output, and the CI scripts (tag mapping, report parsing, summary rendering) |
 | Component | Playwright `setContent` | Cart item and checkout page markup, without booting the app |
 | E2E | Playwright + page objects | Home, shop, cart, routing, checkout flow, guards, validation errors, on Chromium, Firefox, and WebKit |
 | Accessibility | `@axe-core/playwright` | 7 pages: home, shop, cart, address, payment, review, confirmation |
 | Visual | Playwright screenshots | 7 screens × 3 browsers. Baselines are committed and generated on Linux |
 | Smoke | Playwright against `vite preview` | The built artifact: assets load, no console errors or failed requests, add-to-cart works |
 
-How it's split, and why:
+How it's split:
 
 - Pure modules get unit tests. Views are pure render functions, so they get unit tests too, using a stub object instead of a browser.
 - `main.js`, `router.js`, and `effects.js` are left out of unit coverage. They're DOM and event code, and Playwright covers them.
 - Coverage thresholds are per file: 90% statements/functions/lines, 80% branches. A new file with no tests can't hide behind the overall average.
 - Every spec is tagged (`@home`, `@shop`, `@cart`, `@checkout`). CI maps changed paths to tags, so a PR that touches the cart runs the cart slice only.
-- The pipeline's own logic is unit tested too. `scripts/parse-test-report.mjs` and `scripts/ci-summary.mjs` are plain modules, so report parsing and summary formatting are verified without a workflow run.
+- `scripts/parse-test-report.mjs` and `scripts/ci-summary.mjs` are plain modules with unit tests, so report parsing and summary rendering don't need a workflow run to verify.
 - Accessibility runs on Chromium only. Page-level axe results don't differ much between engines, and one browser keeps the job quick.
 - Visual baselines run on Linux with the font stack pinned. Without the pin, the same page measures 1017px locally and 977px on the runner, and every screenshot fails.
 - The smoke test runs the built output through `vite preview`. If assets or paths break, CD stops before publishing.
@@ -94,16 +94,16 @@ flowchart LR
   M([Push to main]) --> C["coverage +<br/>per-file thresholds"] --> E["playwright<br/>3 browsers"] --> A["a11y<br/>chromium"] --> B["vite build"] --> R["copy coverage +<br/>Playwright reports into dist"] --> S["production smoke<br/>vite preview"] --> D["deploy to<br/>GitHub Pages"]
 ```
 
-A few details worth knowing:
+Pipeline details:
 
 - The deploy job is separate from the build job. Build and test steps run with `contents: read`; only the short deploy job gets `pages: write` and `id-token: write`.
 - Deployments are never cancelled. A cancelled Pages deploy can leave a failed deployment record, so CD queues instead; PR checks still cancel superseded runs to save time.
 - Reports are copied into the deployed site, so `/coverage/` and `/test-reports/` always match the running build.
-- Every test job normalizes its report into a `test-status-*` artifact (`scripts/parse-test-report.mjs`), even when the job fails. `test-summary` runs with `if: always()` and aggregates them (`scripts/ci-summary.mjs`) into the run summary and a sticky PR comment.
-- The comment is deleted and reposted on each run, so the current status stays at the bottom of the PR instead of piling up. Fork PRs skip the comment (read-only token) but still get the run summary.
-- CD writes its own summaries: each build stage's outcome, then the deployed URL or the failure from the deploy job.
+- Each test job writes a `test-status-*` artifact through `scripts/parse-test-report.mjs`, including failed jobs. `test-summary` runs with `if: always()`, aggregates them with `scripts/ci-summary.mjs`, and writes the run summary plus a PR comment.
+- The comment step deletes the previous bot comment before posting, so there is one status comment per PR. Fork PRs skip it (read-only token); the run summary is still written.
+- CD writes run summaries too: build stage outcomes, then the deployed URL or failure from the deploy job.
 
-What a PR actually runs:
+What a PR runs:
 
 | Changed files | Unit jobs | Browser tests |
 |---|---|---|
@@ -115,7 +115,7 @@ What a PR actually runs:
 | `README.md` | none | E2E, a11y and smoke skipped; coverage still runs |
 | `scripts/**`, `.github/**` | none | everything, since these are shared patterns |
 
-Workflows: [ci.yml](.github/workflows/ci.yml) · [cd.yml](.github/workflows/cd.yml)
+Workflows: [ci.yml](.github/workflows/ci.yml) · [cd.yml](.github/workflows/cd.yml) · Development notes: [HOWTO.md](HOWTO.md)
 
 ## Decisions and trade-offs
 
@@ -144,7 +144,7 @@ Workflows: [ci.yml](.github/workflows/ci.yml) · [cd.yml](.github/workflows/cd.y
 
 ## How this repo was built
 
-The application code was built with AI assistance. The test strategy, automation architecture, and CI/CD pipeline were designed and implemented by me — that's the part this repo is meant to demonstrate.
+The application code was built with AI assistance. I designed and implemented the test strategy, automation architecture, and CI/CD pipeline; that is what this repo demonstrates.
 
 ## Author
 

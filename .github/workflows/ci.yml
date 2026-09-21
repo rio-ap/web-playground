@@ -100,6 +100,18 @@ jobs:
           name: playwright-report-${{ matrix.browser }}
           path: playwright-report/
           retention-days: 7
+      - name: Record browser status
+        if: always()
+        run: |
+          mkdir -p .ci-status/e2e
+          printf '{"browser":"%s","result":"%s"}\n' "${{ matrix.browser }}" "${{ job.status }}" > ".ci-status/e2e/${{ matrix.browser }}.json"
+      - name: Upload browser status
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-status-${{ matrix.browser }}
+          path: .ci-status/e2e/
+          retention-days: 1
 
   smoke:
     needs: detect-changes
@@ -170,3 +182,61 @@ jobs:
           name: coverage
           path: coverage/
           retention-days: 7
+
+  test-summary:
+    needs: [detect-changes, products-unit, cart-unit, checkout-unit, e2e-tests, smoke, a11y-tests, coverage]
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Download browser statuses
+        if: needs.e2e-tests.result != 'skipped'
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          pattern: e2e-status-*
+          merge-multiple: true
+          path: .ci-status/e2e
+      - name: Build summary
+        env:
+          NEEDS_JSON: ${{ toJSON(needs) }}
+        run: |
+          set -o pipefail
+          printf '%s' "$NEEDS_JSON" | node scripts/ci-summary.mjs --needs - --e2e-dir .ci-status/e2e --commit "${{ github.event.pull_request.head.sha }}" | tee -a "$GITHUB_STEP_SUMMARY" > ci-comment.md
+      - name: Post sticky PR comment
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('node:fs');
+            const marker = '<!-- ci-test-summary -->';
+            const body = fs.readFileSync('ci-comment.md', 'utf8');
+            const issue_number = context.payload.pull_request.number;
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number,
+              per_page: 100,
+            });
+            const existing = comments.find((comment) => comment.body?.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number,
+                body,
+              });
+            }

@@ -13,7 +13,9 @@ const STATUS = {
 };
 
 export function statusFor(result) {
-  return STATUS[result] ?? { key: 'unknown', icon: '❔', label: 'Unknown' };
+  return Object.hasOwn(STATUS, result)
+    ? STATUS[result]
+    : { key: 'unknown', icon: '❔', label: 'Unknown' };
 }
 
 export function renderStatusTable(rows, { title = 'Test results', commit = '' } = {}) {
@@ -80,8 +82,15 @@ export function readE2eStatuses(dir) {
   }
   return names
     .filter((name) => name.endsWith('.json'))
-    .map((name) => JSON.parse(readFileSync(join(dir, name), 'utf8')))
-    .filter((entry) => entry && typeof entry.browser === 'string');
+    .flatMap((name) => {
+      let entry;
+      try {
+        entry = JSON.parse(readFileSync(join(dir, name), 'utf8'));
+      } catch {
+        return [];
+      }
+      return entry && typeof entry.browser === 'string' ? [entry] : [];
+    });
 }
 
 function parseArgs(argv) {

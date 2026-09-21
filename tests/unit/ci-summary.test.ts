@@ -25,6 +25,10 @@ describe('statusFor', () => {
     expect(statusFor('whoops')).toEqual({ key: 'unknown', icon: '❔', label: 'Unknown' });
     expect(statusFor(undefined)).toEqual({ key: 'unknown', icon: '❔', label: 'Unknown' });
   });
+
+  it('does not resolve prototype properties', () => {
+    expect(statusFor('constructor')).toEqual({ key: 'unknown', icon: '❔', label: 'Unknown' });
+  });
 });
 
 describe('renderStatusTable', () => {
@@ -70,6 +74,12 @@ describe('renderStatusTable', () => {
     );
     expect(markdown.endsWith('**1 passed · 0 failed · 0 skipped · 1 cancelled · 1 unknown**')).toBe(
       true,
+    );
+  });
+
+  it('renders an empty table', () => {
+    expect(renderStatusTable([], { title: 'Empty' })).toBe(
+      '### Empty\n\n| Test | Status |\n| --- | --- |\n\n**0 passed · 0 failed · 0 skipped**',
     );
   });
 });
@@ -169,6 +179,13 @@ describe('readE2eStatuses', () => {
 
   it('returns an empty list for a missing directory', () => {
     expect(readE2eStatuses('/nonexistent-ci-summary-dir')).toEqual([]);
+  });
+
+  it('skips corrupt status files', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ci-summary-'));
+    writeFileSync(join(dir, 'chromium.json'), JSON.stringify({ browser: 'chromium', result: 'success' }));
+    writeFileSync(join(dir, 'broken.json'), 'not json');
+    expect(readE2eStatuses(dir)).toEqual([{ browser: 'chromium', result: 'success' }]);
   });
 });
 

@@ -48,7 +48,7 @@ Build: Vite 6. Styling: Tailwind 4, utility classes only. The production build g
 
 | Layer | Tool | What it covers |
 |-------|------|----------------|
-| Unit | Vitest | Cart math, checkout and payment rules, checkout state, view output, and the CI path-to-tag mapping |
+| Unit | Vitest | Cart math, checkout and payment rules, checkout state, view output, the CI path-to-tag mapping, and the CI report parsers and summary renderer |
 | Component | Playwright `setContent` | Cart item and checkout page markup, without booting the app |
 | E2E | Playwright + page objects | Home, shop, cart, routing, checkout flow, guards, validation errors, on Chromium, Firefox, and WebKit |
 | Accessibility | `@axe-core/playwright` | 7 pages: home, shop, cart, address, payment, review, confirmation |
@@ -61,11 +61,12 @@ How it's split, and why:
 - `main.js`, `router.js`, and `effects.js` are left out of unit coverage. They're DOM and event code, and Playwright covers them.
 - Coverage thresholds are per file: 90% statements/functions/lines, 80% branches. A new file with no tests can't hide behind the overall average.
 - Every spec is tagged (`@home`, `@shop`, `@cart`, `@checkout`). CI maps changed paths to tags, so a PR that touches the cart runs the cart slice only.
+- The pipeline's own logic is unit tested too. `scripts/parse-test-report.mjs` and `scripts/ci-summary.mjs` are plain modules, so report parsing and summary formatting are verified without a workflow run.
 - Accessibility runs on Chromium only. Page-level axe results don't differ much between engines, and one browser keeps the job quick.
 - Visual baselines run on Linux with the font stack pinned. Without the pin, the same page measures 1017px locally and 977px on the runner, and every screenshot fails.
 - The smoke test runs the built output through `vite preview`. If assets or paths break, CD stops before publishing.
 
-Current totals: 113 unit tests, 174 Playwright runs (58 per browser), 7 a11y audits, 1 smoke test.
+Current totals: 147 unit tests, 174 Playwright runs (58 per browser), 7 a11y audits, 1 smoke test.
 
 ## CI/CD
 
@@ -79,6 +80,11 @@ flowchart TD
   DC --> A["a11y audit<br/>chromium"]
   DC --> SM["production smoke<br/>build + vite preview"]
   PR --> C["coverage<br/>per-file thresholds"]
+  U --> TS["test-summary<br/>normalize reports →<br/>sticky PR comment"]
+  E --> TS
+  A --> TS
+  SM --> TS
+  C --> TS
 ```
 
 **Push to `main`.** The build job runs everything; the deploy job only publishes.
@@ -93,6 +99,9 @@ A few details worth knowing:
 - The deploy job is separate from the build job. Build and test steps run with `contents: read`; only the short deploy job gets `pages: write` and `id-token: write`.
 - Deployments are never cancelled. A cancelled Pages deploy can leave a failed deployment record, so CD queues instead; PR checks still cancel superseded runs to save time.
 - Reports are copied into the deployed site, so `/coverage/` and `/test-reports/` always match the running build.
+- Every test job normalizes its report into a `test-status-*` artifact (`scripts/parse-test-report.mjs`), even when the job fails. `test-summary` runs with `if: always()` and aggregates them (`scripts/ci-summary.mjs`) into the run summary and a sticky PR comment.
+- The comment is deleted and reposted on each run, so the current status stays at the bottom of the PR instead of piling up. Fork PRs skip the comment (read-only token) but still get the run summary.
+- CD writes its own summaries: each build stage's outcome, then the deployed URL or the failure from the deploy job.
 
 What a PR actually runs:
 
@@ -104,6 +113,7 @@ What a PR actually runs:
 | `src/payment.js` | none (coverage still runs every unit test) | `@checkout` |
 | `package.json` | all three unit jobs | everything |
 | `README.md` | none | E2E, a11y and smoke skipped; coverage still runs |
+| `scripts/**`, `.github/**` | none | everything, since these are shared patterns |
 
 Workflows: [ci.yml](.github/workflows/ci.yml) · [cd.yml](.github/workflows/cd.yml)
 

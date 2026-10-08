@@ -38,3 +38,15 @@ test.describe('Home', { tag: '@home' }, () => {
     await expect(page.getByRole('heading', { name: 'Welcome to Trazire Mart' })).toBeVisible();
   });
 });
+
+test('sends no analytics beacons outside production @home', async ({ page }) => {
+  const beaconAttempts: string[] = [];
+  await page.route(/collect\.trazire\.com/, (route) => {
+    beaconAttempts.push(route.request().url());
+    return route.abort();
+  });
+  await page.goto('/');
+  await page.goto('/#/shop');
+  await page.waitForTimeout(300);
+  expect(beaconAttempts).toEqual([]);
+});

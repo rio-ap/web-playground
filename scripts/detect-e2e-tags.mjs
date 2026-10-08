@@ -48,6 +48,7 @@ const SHARED_PATTERNS = [
   /^src\/main\.js$/,
   /^src\/router\.js$/,
   /^src\/effects\.js$/,
+  /^src\/analytics\.js$/,
   /^src\/views\/product-card\.js$/,
   /^src\/style\.css$/,
   /^index\.html$/,

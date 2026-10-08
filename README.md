@@ -16,7 +16,7 @@ I built it as a target for front-end automation practice and as a place to keep 
 - Home, shop, cart drawer, and a checkout split into address, payment, review, and confirmation
 - A `data-testid` on every element a test needs to click or assert
 - Business logic as plain functions with no DOM access
-- No CDNs or third-party requests. Product images, favicon, and the OG image are all local. One first-party analytics beacon posts pageviews to `collect.trazire.com` — see [Traffic analytics](#traffic-analytics)
+- No CDNs or third-party requests. Product images, favicon, and the OG image are all local
 - Simulated payments: card formatting, brand detection, a `TEST MODE` label, and copy that says nothing is charged
 
 Routes are hash-based: `#/`, `#/shop`, `#/checkout/address`, `#/checkout/payment`, `#/checkout/review`, `#/confirmation`. The cart is a drawer that works from any screen. Only the checkout flow is step-routed, and each step has a guard, so you can't deep-link past one.
@@ -40,29 +40,15 @@ The app is a target for front-end automation practice:
 | `src/router.js` | Hash router | Fits GitHub Pages without server rewrites; Back button works |
 | `src/main.js` | DOM wiring, delegated events, route guards | The only file that touches the document |
 | `src/effects.js` | Fly-to-cart, badge pop, toast | Skips animation when `prefers-reduced-motion` is set |
-| `src/analytics.js` | Vendored analytics beacon | Runs only on the production hostname; see Traffic analytics |
 | `index.html` | Shell: banner, header, cart drawer, toast | Views mount into `#app` |
 
 Build: Vite 6. Styling: Tailwind 4, utility classes only. The production build gets a stricter CSP than dev: a small Vite transform removes `'unsafe-inline'` from `style-src`, because only the dev server needs it.
-
-## Traffic analytics
-
-Visit counts and per-route pageviews come from [trazire-analytics](https://github.com/TrazireOfficial/trazire-analytics), a free, privacy-first collector on Cloudflare Workers.
-
-- `src/analytics.js` is vendored verbatim from that repo's `client/beacon.js`. Update it by copying the file again.
-- The beacon only runs on `playground.trazire.com`. Dev servers, `vite preview`, and all CI tests send nothing.
-- It counts every visit, automation included, and labels `navigator.webdriver` traffic as `automated` in the dashboard. Visitors with Do Not Track enabled are not tracked.
-- No cookies, no IP or user-agent storage. A per-day anonymous hash is the only visitor identifier.
-- Opt out in a browser by visiting any URL with `?no-track=1`; re-enable with `?no-track=0`.
-- The dashboard lives at `stats.trazire.com` and requires the owner's Cloudflare Access login.
-
-Details and deployment: [trazire-analytics README](https://github.com/TrazireOfficial/trazire-analytics).
 
 ## Tests
 
 | Layer | Tool | What it covers |
 |-------|------|----------------|
-| Unit | Vitest | Cart math, checkout and payment rules, checkout state, view output, analytics gating and payload, and the CI scripts (tag mapping, report parsing, summary rendering) |
+| Unit | Vitest | Cart math, checkout and payment rules, checkout state, view output, and the CI scripts (tag mapping, report parsing, summary rendering) |
 | Component | Playwright `setContent` | Cart item and checkout page markup, without booting the app |
 | E2E | Playwright + page objects | Home, shop, cart, routing, checkout flow, guards, validation errors, on Chromium, Firefox, and WebKit |
 | Accessibility | `@axe-core/playwright` | 7 pages: home, shop, cart, address, payment, review, confirmation |
@@ -157,7 +143,6 @@ Workflows: [ci.yml](.github/workflows/ci.yml) · [cd.yml](.github/workflows/cd.y
 - Component specs render committed markup fragments, so they can drift from the views. The unit view tests are the real check.
 - axe runs the WCAG A/AA rules only, not the best-practice set.
 - The next step I'd take is moving E2E and visual tests into their own repository and triggering them from this one with a reusable workflow, which is closer to how my last team split app and test repos.
-- Analytics counts are not tamper-proof, and `automated` is a best-effort label from `navigator.webdriver`; stealth automation reads as human.
 
 ## How this repo was built
 

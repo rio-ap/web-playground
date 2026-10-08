@@ -12,6 +12,7 @@ import {
 } from './checkout-state.js';
 import { detectCardBrand, formatCardNumber, formatExpiry } from './payment.js';
 import { bumpCart, flyToCart, showToast } from './effects.js';
+import { initAnalytics } from './analytics.js';
 import { registerRoute, startRouter } from './router.js';
 import { homeView } from './views/home.js';
 import { shopView } from './views/shop.js';
@@ -305,3 +306,9 @@ registerRoute('/checkout/review', guarded(reviewView, () => {
 registerRoute('/confirmation', guarded(confirmationView, () => (getLastOrder() ? null : '#/')));
 
 startRouter();
+
+initAnalytics({
+  site: 'playground',
+  endpoint: 'https://collect.trazire.com/collect',
+  allowedHost: 'playground.trazire.com',
+});

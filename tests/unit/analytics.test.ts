@@ -53,11 +53,14 @@ describe('shouldTrack', () => {
     expect(shouldTrack({ hostname: 'playground.trazire.com' })).toBe(true);
   });
 
-  it('refuses empty hostnames, opted-out browsers, and DNT', () => {
+  it('refuses empty hostnames and opted-out browsers', () => {
     expect(shouldTrack({ hostname: '' })).toBe(false);
     expect(shouldTrack({ hostname: 'x', optedOut: true })).toBe(false);
-    expect(shouldTrack({ hostname: 'x', doNotTrack: '1' })).toBe(false);
-    expect(shouldTrack({ hostname: 'x', doNotTrack: true })).toBe(false);
+  });
+
+  it('tracks when Do Not Track is set', () => {
+    expect(shouldTrack({ hostname: 'x', doNotTrack: '1' })).toBe(true);
+    expect(shouldTrack({ hostname: 'x', doNotTrack: true })).toBe(true);
   });
 });
 
@@ -180,10 +183,10 @@ describe('initAnalytics', () => {
     expect(beats).toHaveLength(0);
   });
 
-  it('does nothing when DNT is set', () => {
+  it('tracks when DNT is set', () => {
     const { beats } = installGlobals({ doNotTrack: '1' });
-    expect(initAnalytics(config)).toBe(false);
-    expect(beats).toHaveLength(0);
+    expect(initAnalytics(config)).toBe(true);
+    expect(beats).toHaveLength(1);
   });
 
   it('honors a stored opt-out', () => {

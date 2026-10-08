@@ -1,5 +1,4 @@
-// Vendored from https://github.com/TrazireOfficial/trazire-analytics client/beacon.js @ 18a34b8
-// Do not edit here. Copy the file again to update.
+// Vendored analytics beacon. Do not edit here; copy the upstream file again to update.
 export const OPT_OUT_KEY = 'trazire-analytics-opt-out';
 
 export function shouldTrack({ hostname, doNotTrack, optedOut } = {}) {

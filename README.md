@@ -51,7 +51,7 @@ Visit counts and per-route pageviews come from [trazire-analytics](https://githu
 
 - `src/analytics.js` is vendored verbatim from that repo's `client/beacon.js`. Update it by copying the file again.
 - The beacon only runs on `playground.trazire.com`. Dev servers, `vite preview`, and all CI tests send nothing.
-- It counts every visit, automation included, and labels `navigator.webdriver` traffic as `automated` in the dashboard.
+- It counts every visit, automation included, and labels `navigator.webdriver` traffic as `automated` in the dashboard. Visitors with Do Not Track enabled are not tracked.
 - No cookies, no IP or user-agent storage. A per-day anonymous hash is the only visitor identifier.
 - Opt out in a browser by visiting any URL with `?no-track=1`; re-enable with `?no-track=0`.
 - The dashboard lives at `stats.trazire.com` and requires the owner's Cloudflare Access login.
@@ -62,7 +62,7 @@ Details and deployment: [trazire-analytics README](https://github.com/TrazireOff
 
 | Layer | Tool | What it covers |
 |-------|------|----------------|
-| Unit | Vitest | Cart math, checkout and payment rules, checkout state, view output, and the CI scripts (tag mapping, report parsing, summary rendering) |
+| Unit | Vitest | Cart math, checkout and payment rules, checkout state, view output, analytics gating and payload, and the CI scripts (tag mapping, report parsing, summary rendering) |
 | Component | Playwright `setContent` | Cart item and checkout page markup, without booting the app |
 | E2E | Playwright + page objects | Home, shop, cart, routing, checkout flow, guards, validation errors, on Chromium, Firefox, and WebKit |
 | Accessibility | `@axe-core/playwright` | 7 pages: home, shop, cart, address, payment, review, confirmation |

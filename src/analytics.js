@@ -1,10 +1,9 @@
 // Vendored analytics beacon. Do not edit here; copy the upstream file again to update.
 export const OPT_OUT_KEY = 'trazire-analytics-opt-out';
 
-export function shouldTrack({ hostname, doNotTrack, optedOut } = {}) {
+export function shouldTrack({ hostname, optedOut } = {}) {
   if (!hostname) return false;
   if (optedOut) return false;
-  if (doNotTrack === '1' || doNotTrack === true) return false;
   return true;
 }
 
@@ -73,7 +72,7 @@ export function initAnalytics({ site, endpoint, allowedHost } = {}) {
   }
   const optedOut = readOptOut(window.location.search, storage);
 
-  if (!shouldTrack({ hostname: window.location.hostname, doNotTrack: navigator.doNotTrack, optedOut })) {
+  if (!shouldTrack({ hostname: window.location.hostname, optedOut })) {
     return false;
   }
 

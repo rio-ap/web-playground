@@ -66,7 +66,7 @@ How it's split:
 - Visual baselines run on Linux with the font stack pinned. Without the pin, the same page measures 1017px locally and 977px on the runner, and every screenshot fails.
 - The smoke test runs the built output through `vite preview`. If assets or paths break, CD stops before publishing.
 
-Current totals: 147 unit tests, 174 Playwright runs (58 per browser), 7 a11y audits, 1 smoke test.
+Current totals: 171 unit tests, 177 Playwright runs (59 per browser), 7 a11y audits, 1 smoke test.
 
 ## CI/CD
 

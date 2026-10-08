@@ -63,6 +63,10 @@ describe('tagsForPaths', () => {
     }
   });
 
+  it('returns all tags for analytics changes', () => {
+    expect(tagsForPaths(['src/analytics.js'])).toEqual(ALL_TAGS);
+  });
+
   it('returns nothing for unrelated paths', () => {
     expect(tagsForPaths(['README.md', 'LICENSE', 'HOWTO.md'])).toEqual([]);
   });

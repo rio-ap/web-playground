@@ -68,6 +68,19 @@ How it's split:
 
 Current totals: 172 unit tests, 39 Playwright runs (13 per browser: component + visual), 7 a11y audits, 1 smoke test. The functional E2E suite lives in [rio-ap/web-playground-automation](https://github.com/rio-ap/web-playground-automation).
 
+## Modules
+
+`home`, `shop`, `cart` and `checkout` are the canonical module names. CI maps changed paths to the matching Playwright tags, and the E2E suite in [rio-ap/web-playground-automation](https://github.com/rio-ap/web-playground-automation) tags its purpose suites with the same vocabulary.
+
+| Module | Tag | Source paths |
+|--------|-----|--------------|
+| home | `@home` | `src/products.js`, `src/views/home.js` |
+| shop | `@shop` | `src/products.js`, `src/views/shop.js` |
+| cart | `@cart` | `src/cart.js` |
+| checkout | `@checkout` | `src/checkout.js`, `src/checkout-state.js`, `src/payment.js`, `src/views/checkout/*`, `src/views/confirmation.js` |
+
+Shared patterns (configs, shared views, `scripts/`, `.github/`) select every tag — see `scripts/detect-browser-tags.mjs` for the exact table.
+
 ## CI/CD
 
 **Pull requests.** `detect-changes` reads the diff and decides what runs.

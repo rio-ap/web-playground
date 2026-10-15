@@ -81,6 +81,8 @@ Current totals: 172 unit tests, 39 Playwright runs (13 per browser: component + 
 
 Shared patterns (configs, shared views, `scripts/`, `.github/`) select every tag — see `scripts/detect-browser-tags.mjs` for the exact table.
 
+The E2E suite additionally tags its release-blocking subset `@critical` (home render, add-to-cart, cart maths, full checkout, start-shopping) — the base for a fast gate once the suites are wired together.
+
 ## CI/CD
 
 **Pull requests.** `detect-changes` reads the diff and decides what runs.

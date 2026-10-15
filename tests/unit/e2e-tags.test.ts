@@ -21,13 +21,7 @@ describe('tagsForPaths', () => {
     expect(tagsForPaths(['src/views/confirmation.js'])).toEqual(['@checkout']);
   });
 
-  it('maps module spec and component files to their tags', () => {
-    expect(tagsForPaths(['tests/e2e/home.spec.ts'])).toEqual(['@home']);
-    expect(tagsForPaths(['tests/e2e/product-grid.spec.ts'])).toEqual(['@shop']);
-    expect(tagsForPaths(['tests/e2e/cart-flow.spec.ts'])).toEqual(['@cart']);
-    expect(tagsForPaths(['tests/e2e/add-to-cart-feedback.spec.ts'])).toEqual(['@cart']);
-    expect(tagsForPaths(['tests/e2e/checkout-flow.spec.ts'])).toEqual(['@checkout']);
-    expect(tagsForPaths(['tests/e2e/checkout-guards.spec.ts'])).toEqual(['@checkout']);
+  it('maps component specs to their tags', () => {
     expect(tagsForPaths(['tests/component/cart-item.spec.ts'])).toEqual(['@cart']);
     expect(tagsForPaths(['tests/component/checkout-form.spec.ts'])).toEqual(['@checkout']);
   });

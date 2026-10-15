@@ -3,31 +3,20 @@ import { readFileSync } from 'node:fs';
 
 export const ALL_TAGS = ['@home', '@shop', '@cart', '@checkout'];
 
+// The functional E2E specs live in rio-ap/web-playground-automation; these rules
+// select the component, visual and a11y suites that remain in this repo.
 const MODULE_RULES = [
   {
     tag: '@home',
-    patterns: [
-      /^src\/products\.js$/,
-      /^src\/views\/home\.js$/,
-      /^tests\/e2e\/home\.spec\.ts$/,
-    ],
+    patterns: [/^src\/products\.js$/, /^src\/views\/home\.js$/],
   },
   {
     tag: '@shop',
-    patterns: [
-      /^src\/products\.js$/,
-      /^src\/views\/shop\.js$/,
-      /^tests\/e2e\/product-grid\.spec\.ts$/,
-    ],
+    patterns: [/^src\/products\.js$/, /^src\/views\/shop\.js$/],
   },
   {
     tag: '@cart',
-    patterns: [
-      /^src\/cart\.js$/,
-      /^tests\/e2e\/cart-flow\.spec\.ts$/,
-      /^tests\/e2e\/add-to-cart-feedback\.spec\.ts$/,
-      /^tests\/component\/cart-item\.spec\.ts$/,
-    ],
+    patterns: [/^src\/cart\.js$/, /^tests\/component\/cart-item\.spec\.ts$/],
   },
   {
     tag: '@checkout',
@@ -37,8 +26,6 @@ const MODULE_RULES = [
       /^src\/payment\.js$/,
       /^src\/views\/checkout\//,
       /^src\/views\/confirmation\.js$/,
-      /^tests\/e2e\/checkout-flow\.spec\.ts$/,
-      /^tests\/e2e\/checkout-guards\.spec\.ts$/,
       /^tests\/component\/checkout-form\.spec\.ts$/,
     ],
   },

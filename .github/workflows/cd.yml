@@ -30,8 +30,8 @@ jobs:
         id: playwright
         run: npx playwright install --with-deps
 
-      - name: E2E Tests
-        id: e2e
+      - name: Browser tests (component + visual)
+        id: browser
         run: npx playwright test
 
       - name: Accessibility Audits
@@ -63,7 +63,7 @@ jobs:
           STEPS_JSON: >-
             [{"label":"Unit coverage","result":"${{ steps.coverage.outcome }}"},
              {"label":"Install Playwright","result":"${{ steps.playwright.outcome }}"},
-             {"label":"E2E tests","result":"${{ steps.e2e.outcome }}"},
+             {"label":"Browser tests","result":"${{ steps.browser.outcome }}"},
              {"label":"Accessibility audits","result":"${{ steps.a11y.outcome }}"},
              {"label":"Build","result":"${{ steps.build.outcome }}"},
              {"label":"Smoke test","result":"${{ steps.smoke.outcome }}"}]

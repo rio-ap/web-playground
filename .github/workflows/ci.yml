@@ -19,8 +19,8 @@ jobs:
       cart: ${{ steps.check.outputs.cart }}
       checkout: ${{ steps.check.outputs.checkout }}
       config: ${{ steps.check.outputs.config }}
-      e2e: ${{ steps.check.outputs.e2e }}
-      e2e_tags: ${{ steps.check.outputs.e2e_tags }}
+      browser: ${{ steps.check.outputs.browser }}
+      browser_tags: ${{ steps.check.outputs.browser_tags }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -105,9 +105,10 @@ jobs:
           path: .ci-status/tests/
           retention-days: 1
 
-  e2e-tests:
+  browser-tests:
+    name: Browser tests (${{ matrix.browser }})
     needs: detect-changes
-    if: needs.detect-changes.outputs.e2e == 'true'
+    if: needs.detect-changes.outputs.browser == 'true'
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -123,10 +124,10 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps ${{ matrix.browser }}
       - name: Run Playwright tests
-        run: npx playwright test --project=${{ matrix.browser }} --grep "${{ needs.detect-changes.outputs.e2e_tags }}"
+        run: npx playwright test --project=${{ matrix.browser }} --grep "${{ needs.detect-changes.outputs.browser_tags }}"
         env:
           CI: true
-          PLAYWRIGHT_JSON_OUTPUT_NAME: .ci-status/raw/e2e-${{ matrix.browser }}.json
+          PLAYWRIGHT_JSON_OUTPUT_NAME: .ci-status/raw/browser-${{ matrix.browser }}.json
       - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@v4
@@ -136,18 +137,18 @@ jobs:
           retention-days: 7
       - name: Normalize test report
         if: always()
-        run: node scripts/parse-test-report.mjs --tool playwright --id e2e-${{ matrix.browser }} --report .ci-status/raw/e2e-${{ matrix.browser }}.json --result "${{ job.status }}" --output .ci-status/tests/e2e-${{ matrix.browser }}.json
+        run: node scripts/parse-test-report.mjs --tool playwright --id browser-${{ matrix.browser }} --report .ci-status/raw/browser-${{ matrix.browser }}.json --result "${{ job.status }}" --output .ci-status/tests/browser-${{ matrix.browser }}.json
       - name: Upload test status
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-status-e2e-${{ matrix.browser }}
+          name: test-status-browser-${{ matrix.browser }}
           path: .ci-status/tests/
           retention-days: 1
 
   smoke:
     needs: detect-changes
-    if: needs.detect-changes.outputs.e2e == 'true'
+    if: needs.detect-changes.outputs.browser == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -185,7 +186,7 @@ jobs:
 
   a11y-tests:
     needs: detect-changes
-    if: needs.detect-changes.outputs.e2e == 'true'
+    if: needs.detect-changes.outputs.browser == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -197,7 +198,7 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
       - name: Run accessibility audits
-        run: npx playwright test -c playwright.a11y.config.ts --grep "${{ needs.detect-changes.outputs.e2e_tags }}"
+        run: npx playwright test -c playwright.a11y.config.ts --grep "${{ needs.detect-changes.outputs.browser_tags }}"
         env:
           CI: true
           PLAYWRIGHT_JSON_OUTPUT_NAME: .ci-status/raw/a11y-tests.json
@@ -238,7 +239,7 @@ jobs:
           retention-days: 7
 
   test-summary:
-    needs: [detect-changes, products-unit, cart-unit, checkout-unit, e2e-tests, smoke, a11y-tests, coverage]
+    needs: [detect-changes, products-unit, cart-unit, checkout-unit, browser-tests, smoke, a11y-tests, coverage]
     if: always()
     runs-on: ubuntu-latest
     permissions:

@@ -9,7 +9,7 @@ import {
   renderStatusTable,
   buildSummary,
   readTestStats,
-  E2E_BROWSERS,
+  BROWSER_PROJECTS,
 } from '../../scripts/ci-summary.mjs';
 
 describe('statusFor', () => {
@@ -113,13 +113,13 @@ describe('renderStatusTable', () => {
     const failures = Array.from({ length: 17 }, (_, index) => `spec › failure ${index + 1}`);
     const markdown = renderStatusTable(
       [
-        { label: 'E2E · firefox', result: 'failure', tests: { passed: 37, total: 54 }, failures },
+        { label: 'Browser tests · firefox', result: 'failure', tests: { passed: 37, total: 54 }, failures },
         { label: 'Unit · cart', result: 'success', tests: { passed: 13, total: 13 }, failures: [] },
       ],
       { title: 'CI test results' },
     );
     expect(markdown).toContain('<summary>❌ 17 failed tests</summary>');
-    expect(markdown).toContain('**E2E · firefox**');
+    expect(markdown).toContain('**Browser tests · firefox**');
     expect(markdown).toContain('- `spec › failure 15`');
     expect(markdown).not.toContain('- `spec › failure 16`');
     expect(markdown).toContain('- `…and 2 more`');
@@ -130,7 +130,7 @@ describe('renderStatusTable', () => {
     const markdown = renderStatusTable(
       [
         {
-          label: 'E2E · firefox',
+          label: 'Browser tests · firefox',
           result: 'failure',
           tests: { passed: 0, total: 1 },
           failures: ['weird `title`\nsecond line'],
@@ -153,7 +153,7 @@ const allPass = {
   'products-unit': { result: 'success' },
   'cart-unit': { result: 'success' },
   'checkout-unit': { result: 'success' },
-  'e2e-tests': { result: 'success' },
+  'browser-tests': { result: 'success' },
   smoke: { result: 'success' },
   'a11y-tests': { result: 'success' },
   coverage: { result: 'success' },
@@ -180,13 +180,13 @@ describe('buildSummary', () => {
     expect(markdown).toContain('### CI test results — `abc1234`');
   });
 
-  it('renders every job and e2e browser in fixed order', () => {
+  it('renders every job and browser rows in fixed order', () => {
     const markdown = buildSummary({
       jobs: allPass,
       tests: {
-        'e2e-webkit': statsEntry('e2e-webkit', { result: 'failure' }),
-        'e2e-chromium': statsEntry('e2e-chromium'),
-        'e2e-firefox': statsEntry('e2e-firefox'),
+        'browser-webkit': statsEntry('browser-webkit', { result: 'failure' }),
+        'browser-chromium': statsEntry('browser-chromium'),
+        'browser-firefox': statsEntry('browser-firefox'),
       },
       commit: 'abc1234',
     });
@@ -194,41 +194,41 @@ describe('buildSummary', () => {
       'Unit · products',
       'Unit · cart',
       'Unit · checkout',
-      'E2E · chromium',
-      'E2E · firefox',
-      'E2E · webkit',
+      'Browser tests · chromium',
+      'Browser tests · firefox',
+      'Browser tests · webkit',
       'Smoke',
       'Accessibility',
       'Coverage',
     ]);
-    expect(markdown).toContain('| E2E · webkit | ❌ Fail |');
+    expect(markdown).toContain('| Browser tests · webkit | ❌ Fail |');
   });
 
-  it('marks all browser rows skipped when the e2e job was skipped', () => {
-    const jobs = { ...allPass, 'e2e-tests': { result: 'skipped' } };
+  it('marks all browser rows skipped when the browser job was skipped', () => {
+    const jobs = { ...allPass, 'browser-tests': { result: 'skipped' } };
     const markdown = buildSummary({ jobs, commit: 'abc1234' });
-    for (const browser of E2E_BROWSERS) {
-      expect(markdown).toContain(`| E2E · ${browser} | ⏭️ Skipped |`);
+    for (const browser of BROWSER_PROJECTS) {
+      expect(markdown).toContain(`| Browser tests · ${browser} | ⏭️ Skipped |`);
     }
   });
 
-  it('marks browser rows cancelled when the e2e job was cancelled', () => {
-    const jobs = { ...allPass, 'e2e-tests': { result: 'cancelled' } };
+  it('marks browser rows cancelled when the browser job was cancelled', () => {
+    const jobs = { ...allPass, 'browser-tests': { result: 'cancelled' } };
     const markdown = buildSummary({ jobs, commit: 'abc1234' });
-    for (const browser of E2E_BROWSERS) {
-      expect(markdown).toContain(`| E2E · ${browser} | ⚠️ Cancelled |`);
+    for (const browser of BROWSER_PROJECTS) {
+      expect(markdown).toContain(`| Browser tests · ${browser} | ⚠️ Cancelled |`);
     }
   });
 
   it('shows unknown when a browser status file is missing', () => {
     const markdown = buildSummary({
       jobs: allPass,
-      tests: { 'e2e-chromium': statsEntry('e2e-chromium') },
+      tests: { 'browser-chromium': statsEntry('browser-chromium') },
       commit: 'abc1234',
     });
-    expect(markdown).toContain('| E2E · chromium | ✅ Pass |');
-    expect(markdown).toContain('| E2E · firefox | ❔ Unknown |');
-    expect(markdown).toContain('| E2E · webkit | ❔ Unknown |');
+    expect(markdown).toContain('| Browser tests · chromium | ✅ Pass |');
+    expect(markdown).toContain('| Browser tests · firefox | ❔ Unknown |');
+    expect(markdown).toContain('| Browser tests · webkit | ❔ Unknown |');
   });
 
   it('shows unknown for missing job keys', () => {
@@ -255,17 +255,17 @@ describe('buildSummary', () => {
     expect(markdown).toContain('- `a11y.spec.ts › home › no violations`');
   });
 
-  it('uses per-browser e2e stats results and counts when the e2e job ran', () => {
+  it('uses per-browser browser stats results and counts when the browser job ran', () => {
     const markdown = buildSummary({
       jobs: allPass,
       tests: {
-        'e2e-chromium': statsEntry('e2e-chromium', {
+        'browser-chromium': statsEntry('browser-chromium', {
           total: 54,
           passed: 54,
           failed: 0,
           failedTests: [],
         }),
-        'e2e-firefox': statsEntry('e2e-firefox', {
+        'browser-firefox': statsEntry('browser-firefox', {
           result: 'failure',
           total: 54,
           passed: 52,
@@ -275,20 +275,20 @@ describe('buildSummary', () => {
       },
       commit: 'abc1234',
     });
-    expect(markdown).toContain('| E2E · chromium | ✅ Pass | 54/54 |');
-    expect(markdown).toContain('| E2E · firefox | ❌ Fail | 52/54 |');
-    expect(markdown).toContain('| E2E · webkit | ❔ Unknown | — |');
+    expect(markdown).toContain('| Browser tests · chromium | ✅ Pass | 54/54 |');
+    expect(markdown).toContain('| Browser tests · firefox | ❌ Fail | 52/54 |');
+    expect(markdown).toContain('| Browser tests · webkit | ❔ Unknown | — |');
   });
 
   it('keeps skipped/cancelled browser status even if stale stats exist', () => {
     const markdown = buildSummary({
-      jobs: { ...allPass, 'e2e-tests': { result: 'skipped' } },
+      jobs: { ...allPass, 'browser-tests': { result: 'skipped' } },
       tests: {
-        'e2e-chromium': statsEntry('e2e-chromium', { passed: 10, failed: 0, failedTests: [] }),
+        'browser-chromium': statsEntry('browser-chromium', { passed: 10, failed: 0, failedTests: [] }),
       },
       commit: 'abc1234',
     });
-    expect(markdown).toContain('| E2E · chromium | ⏭️ Skipped | 10/10 |');
+    expect(markdown).toContain('| Browser tests · chromium | ⏭️ Skipped | 10/10 |');
   });
 
   it('shows a dash for reportMissing stats', () => {
@@ -343,16 +343,16 @@ describe('ci-summary CLI', () => {
         'products-unit': { result: 'success' },
         'cart-unit': { result: 'success' },
         'checkout-unit': { result: 'skipped' },
-        'e2e-tests': { result: 'success' },
+        'browser-tests': { result: 'success' },
         smoke: { result: 'success' },
         'a11y-tests': { result: 'failure' },
         coverage: { result: 'success' },
       }),
     );
     writeFileSync(
-      join(testsDir, 'e2e-chromium.json'),
+      join(testsDir, 'browser-chromium.json'),
       JSON.stringify({
-        id: 'e2e-chromium',
+        id: 'browser-chromium',
         result: 'success',
         total: 4,
         passed: 4,
@@ -365,19 +365,19 @@ describe('ci-summary CLI', () => {
     expect(output).toContain(MARKER);
     expect(output).toContain('### CI test results — `deadbee`');
     expect(output).toContain('| Accessibility | ❌ Fail | — |');
-    expect(output).toContain('| E2E · chromium | ✅ Pass | 4/4 |');
-    expect(output).toContain('| E2E · firefox | ❔ Unknown | — |');
+    expect(output).toContain('| Browser tests · chromium | ✅ Pass | 4/4 |');
+    expect(output).toContain('| Browser tests · firefox | ❔ Unknown | — |');
   });
 
   it('builds a steps table from stdin for CD', () => {
     const input = JSON.stringify([
       { label: 'Unit coverage', result: 'success' },
-      { label: 'E2E tests', result: 'failure' },
+      { label: 'Browser tests', result: 'failure' },
       { label: 'Smoke test', result: 'skipped' },
     ]);
     const output = run(['--steps', '-', '--title', 'CD pipeline results', '--commit', 'cafe123'], input);
     expect(output).toContain('### CD pipeline results — `cafe123`');
-    expect(output).toContain('| E2E tests | ❌ Fail |');
+    expect(output).toContain('| Browser tests | ❌ Fail |');
     expect(output).toContain('**1 passed · 1 failed · 1 skipped**');
     expect(output).not.toContain(MARKER);
   });

@@ -74,4 +74,4 @@ function main() {
   if (tags.length) process.stdout.write(`${tags.join('|')}\n`);
 }
 
-if (process.argv[1]?.endsWith('detect-e2e-tags.mjs')) main();
+if (process.argv[1]?.endsWith('detect-browser-tags.mjs')) main();

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { execFileSync } from 'node:child_process';
-import { tagsForPaths, ALL_TAGS } from '../../scripts/detect-e2e-tags.mjs';
+import { tagsForPaths, ALL_TAGS } from '../../scripts/detect-browser-tags.mjs';
 
 describe('tagsForPaths', () => {
   it('maps a single module source file to its tag', () => {
@@ -49,7 +49,7 @@ describe('tagsForPaths', () => {
       'tests/e2e/helpers/test-data.ts',
       'tests/a11y/a11y.spec.ts',
       'tests/e2e/visual/layout.spec.ts',
-      'scripts/detect-e2e-tags.mjs',
+      'scripts/detect-browser-tags.mjs',
       '.github/workflows/ci.yml',
     ];
     for (const path of sharedPaths) {
@@ -75,9 +75,9 @@ describe('tagsForPaths', () => {
   });
 });
 
-describe('detect-e2e-tags CLI', () => {
+describe('detect-browser-tags CLI', () => {
   const run = (input: string) =>
-    execFileSync('node', ['scripts/detect-e2e-tags.mjs'], { input }).toString().trim();
+    execFileSync('node', ['scripts/detect-browser-tags.mjs'], { input }).toString().trim();
 
   it('prints grep-ready tags from stdin', () => {
     expect(run('src/cart.js\n')).toBe('@cart');

@@ -70,7 +70,7 @@ Current totals: 172 unit tests, 39 Playwright runs (13 per browser: component + 
 
 ## Modules
 
-`home`, `shop`, `cart` and `checkout` are the canonical module names. CI maps changed paths to the matching Playwright tags, and the E2E suite in [rio-ap/web-playground-automation](https://github.com/rio-ap/web-playground-automation) tags its purpose suites with the same vocabulary.
+`home`, `shop`, `cart` and `checkout` are the canonical module names. CI maps changed paths to the matching Playwright tags, and every test in the E2E suite of [rio-ap/web-playground-automation](https://github.com/rio-ap/web-playground-automation) carries the matching module tag alongside its `@playground` domain tag.
 
 | Module | Tag | Source paths |
 |--------|-----|--------------|

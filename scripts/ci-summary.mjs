@@ -77,7 +77,7 @@ export function renderStatusTable(rows, { title = 'Test results', commit = '' } 
   return lines.join('\n');
 }
 
-export const E2E_BROWSERS = ['chromium', 'firefox', 'webkit'];
+export const BROWSER_PROJECTS = ['chromium', 'firefox', 'webkit'];
 
 const HEAD_ROWS = [
   ['products-unit', 'Unit · products'],
@@ -105,12 +105,12 @@ export function buildSummary({ jobs = {}, tests = {}, commit = '' } = {}) {
     result: jobs[id]?.result,
     ...toRowExtras(tests[id]),
   }));
-  const e2eResult = jobs['e2e-tests']?.result;
-  for (const browser of E2E_BROWSERS) {
-    const stats = tests[`e2e-${browser}`];
+  const browserResult = jobs['browser-tests']?.result;
+  for (const browser of BROWSER_PROJECTS) {
+    const stats = tests[`browser-${browser}`];
     const result =
-      e2eResult === 'skipped' || e2eResult === 'cancelled' ? e2eResult : stats?.result;
-    rows.push({ label: `E2E · ${browser}`, result, ...toRowExtras(stats) });
+      browserResult === 'skipped' || browserResult === 'cancelled' ? browserResult : stats?.result;
+    rows.push({ label: `Browser tests · ${browser}`, result, ...toRowExtras(stats) });
   }
   for (const [id, label] of TAIL_ROWS) {
     rows.push({ label, result: jobs[id]?.result, ...toRowExtras(tests[id]) });

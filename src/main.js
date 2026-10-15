@@ -57,18 +57,18 @@ function renderCartItems() {
   cartFooter.classList.remove('hidden');
 
   cartItemsContainer.innerHTML = cart.map((item) => `
-    <div data-testid="cart-item-${item.product.id}" class="flex items-center gap-4 py-4 border-b border-gray-100">
+    <div data-testid="cart-item-${item.product.id}" class="flex items-center gap-4 py-4 border-b border-gray-100 max-sm:gap-3">
       <img data-testid="cart-item-image-${item.product.id}" src="${item.product.image}" alt="${item.product.name}" class="w-16 h-16 object-cover rounded-lg" />
       <div class="flex-1 min-w-0">
-        <h4 data-testid="cart-item-name-${item.product.id}" class="font-semibold text-gray-900 truncate">${item.product.name}</h4>
+        <h4 data-testid="cart-item-name-${item.product.id}" class="font-semibold text-gray-900 truncate max-sm:line-clamp-2 max-sm:whitespace-normal max-sm:break-words">${item.product.name}</h4>
         <p data-testid="cart-item-price-${item.product.id}" class="text-blue-600 font-bold">${formatPrice(item.product.price)}</p>
       </div>
-      <div data-testid="cart-item-quantity-${item.product.id}" class="flex items-center gap-2">
+      <div data-testid="cart-item-quantity-${item.product.id}" class="flex items-center gap-2 max-sm:gap-1">
         <button data-testid="decrement-btn-${item.product.id}" data-id="${item.product.id}" class="cart-qty-btn w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 font-medium text-gray-600 cursor-pointer">-</button>
-        <span data-testid="item-quantity-${item.product.id}" class="w-6 text-center font-medium text-gray-900">${item.quantity}</span>
+        <span data-testid="item-quantity-${item.product.id}" class="w-6 text-center font-medium text-gray-900 max-sm:w-5">${item.quantity}</span>
         <button data-testid="increment-btn-${item.product.id}" data-id="${item.product.id}" class="cart-qty-btn w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 font-medium text-gray-600 cursor-pointer">+</button>
       </div>
-      <button data-testid="remove-btn-${item.product.id}" data-id="${item.product.id}" class="cart-remove-btn text-red-600 hover:text-red-700 text-sm font-medium cursor-pointer">Remove</button>
+      <button data-testid="remove-btn-${item.product.id}" data-id="${item.product.id}" class="cart-remove-btn text-red-600 hover:text-red-700 text-sm font-medium cursor-pointer p-1 -m-1">Remove</button>
     </div>
   `).join('');
 

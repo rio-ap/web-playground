@@ -18,12 +18,12 @@ outputs:
   config:
     description: package.json or vitest.config.js changed
     value: ${{ steps.check.outputs.config }}
-  e2e:
-    description: E2E-relevant changes were detected
-    value: ${{ steps.check.outputs.e2e }}
-  e2e_tags:
+  browser:
+    description: Browser-test-relevant changes were detected
+    value: ${{ steps.check.outputs.browser }}
+  browser_tags:
     description: Playwright tags to run (pipe-separated)
-    value: ${{ steps.check.outputs.e2e_tags }}
+    value: ${{ steps.check.outputs.browser_tags }}
 
 runs:
   using: composite
@@ -44,7 +44,7 @@ runs:
         # Config triggers (runs everything)
         echo "config=$(echo "$CHANGED" | grep -qE '^package\.json$|^vitest\.config\.js$' && echo true || echo false)" >> "$GITHUB_OUTPUT"
 
-        # E2E selection: map changed paths to module tags
-        E2E_TAGS=$(node scripts/detect-e2e-tags.mjs <<< "$CHANGED")
-        echo "e2e_tags=${E2E_TAGS}" >> "$GITHUB_OUTPUT"
-        echo "e2e=$([ -n "${E2E_TAGS// }" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+        # Browser-test selection: map changed paths to module tags
+        BROWSER_TAGS=$(node scripts/detect-browser-tags.mjs <<< "$CHANGED")
+        echo "browser_tags=${BROWSER_TAGS}" >> "$GITHUB_OUTPUT"
+        echo "browser=$([ -n "${BROWSER_TAGS// }" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"

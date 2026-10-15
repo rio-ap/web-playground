@@ -50,7 +50,7 @@ Build: Vite 6. Styling: Tailwind 4, utility classes only. The production build g
 |-------|------|----------------|
 | Unit | Vitest | Cart math, checkout and payment rules, checkout state, view output, and the CI scripts (tag mapping, report parsing, summary rendering) |
 | Component | Playwright `setContent` | Cart item and checkout page markup, without booting the app |
-| E2E | Playwright + page objects | Home, shop, cart, routing, checkout flow, guards, validation errors, on Chromium, Firefox, and WebKit |
+| E2E | Playwright + page objects | Moved to [rio-ap/web-playground-automation](https://github.com/rio-ap/web-playground-automation) — home, shop, cart, routing, checkout flow, guards and validation errors, on Chromium, Firefox, and WebKit |
 | Accessibility | `@axe-core/playwright` | 7 pages: home, shop, cart, address, payment, review, confirmation |
 | Visual | Playwright screenshots | 7 screens × 3 browsers. Baselines are committed and generated on Linux |
 | Smoke | Playwright against `vite preview` | The built artifact: assets load, no console errors or failed requests, add-to-cart works |
@@ -58,7 +58,7 @@ Build: Vite 6. Styling: Tailwind 4, utility classes only. The production build g
 How it's split:
 
 - Pure modules get unit tests. Views are pure render functions, so they get unit tests too, using a stub object instead of a browser.
-- `main.js`, `router.js`, and `effects.js` are left out of unit coverage. They're DOM and event code, and Playwright covers them.
+- `main.js`, `router.js`, and `effects.js` are left out of unit coverage. They're DOM and event code — covered end-to-end in [rio-ap/web-playground-automation](https://github.com/rio-ap/web-playground-automation), and here by the visual, a11y and smoke runs.
 - Coverage thresholds are per file: 90% statements/functions/lines, 80% branches. A new file with no tests can't hide behind the overall average.
 - Every spec is tagged (`@home`, `@shop`, `@cart`, `@checkout`). CI maps changed paths to tags, so a PR that touches the cart runs the cart slice only.
 - `scripts/parse-test-report.mjs` and `scripts/ci-summary.mjs` are plain modules with unit tests, so report parsing and summary rendering don't need a workflow run to verify.
@@ -66,7 +66,22 @@ How it's split:
 - Visual baselines run on Linux with the font stack pinned. Without the pin, the same page measures 1017px locally and 977px on the runner, and every screenshot fails.
 - The smoke test runs the built output through `vite preview`. If assets or paths break, CD stops before publishing.
 
-Current totals: 171 unit tests, 177 Playwright runs (59 per browser), 7 a11y audits, 1 smoke test.
+Current totals: 172 unit tests, 39 Playwright runs (13 per browser: component + visual), 7 a11y audits, 1 smoke test. The functional E2E suite lives in [rio-ap/web-playground-automation](https://github.com/rio-ap/web-playground-automation).
+
+## Modules
+
+`home`, `shop`, `cart` and `checkout` are the canonical module names. CI maps changed paths to the matching Playwright tags, and every test in the E2E suite of [rio-ap/web-playground-automation](https://github.com/rio-ap/web-playground-automation) carries its matching module tag(s) alongside its `@playground` domain tag — a test that spans modules carries each.
+
+| Module | Tag | Source paths |
+|--------|-----|--------------|
+| home | `@home` | `src/products.js`, `src/views/home.js` |
+| shop | `@shop` | `src/products.js`, `src/views/shop.js` |
+| cart | `@cart` | `src/cart.js` |
+| checkout | `@checkout` | `src/checkout.js`, `src/checkout-state.js`, `src/payment.js`, `src/views/checkout/*`, `src/views/confirmation.js` |
+
+Shared patterns (configs, shared views, `scripts/`, `.github/`) select every tag — see `scripts/detect-browser-tags.mjs` for the exact table.
+
+The E2E suite additionally tags its release-blocking subset `@critical` (home render, catalogue, add-to-cart, cart maths/remove, multi-item cart, full checkout, payment validation) — the base for a fast gate once the suites are wired together.
 
 ## CI/CD
 
@@ -76,7 +91,7 @@ Current totals: 171 unit tests, 177 Playwright runs (59 per browser), 7 a11y aud
 flowchart TD
   PR([Pull request]) --> DC["detect-changes<br/>diff → unit flags + module tags"]
   DC --> U["unit jobs<br/>only for changed modules"]
-  DC --> E["e2e + visual<br/>chromium · firefox · webkit<br/>--grep module tags"]
+  DC --> E["component + visual<br/>chromium · firefox · webkit<br/>--grep module tags"]
   DC --> A["a11y audit<br/>chromium"]
   DC --> SM["production smoke<br/>build + vite preview"]
   PR --> C["coverage<br/>per-file thresholds"]
@@ -107,12 +122,12 @@ What a PR runs:
 
 | Changed files | Unit jobs | Browser tests |
 |---|---|---|
-| `src/cart.js` | `cart-unit` | cart slice only: E2E, component, a11y, visual |
+| `src/cart.js` | `cart-unit` | cart slice only: component, a11y, visual |
 | `src/views/home.js` | none | `@home` |
 | `src/products.js` | `products-unit` | `@home` and `@shop`, since both render product data |
 | `src/payment.js` | none (coverage still runs every unit test) | `@checkout` |
 | `package.json` | all three unit jobs | everything |
-| `README.md` | none | E2E, a11y and smoke skipped; coverage still runs |
+| `README.md` | none | browser tests, a11y and smoke skipped; coverage still runs |
 | `scripts/**`, `.github/**` | none | everything, since these are shared patterns |
 
 ### Base path and the custom domain
@@ -131,7 +146,7 @@ Workflows: [ci.yml](.github/workflows/ci.yml) · [cd.yml](.github/workflows/cd.y
 | No framework | React or Vue | Keeps the browser tab and the CI runtime boring, so the test code is what you read. |
 | Pure views, events in `main.js` | Listeners inside each view | Views stay testable without a browser, and all the DOM wiring sits in one file. |
 | Per-file coverage | One global percentage | Globals let an untested file pass as long as the rest of the code is covered. |
-| Module tags for E2E | Run everything, or run changed spec files | Tags follow behavior instead of file paths, and PR runs stay short. |
+| Module tags for browser tests | Run everything, or run changed spec files | Tags follow behavior instead of file paths, and PR runs stay short. |
 | Smoke test gates the deploy | Trust the dev-server E2E | Only the built artifact catches wrong asset paths before users see them. |
 | Custom domain at the root | Keep the `/web-playground/` project path | Pages serves the artifact at the domain root once a domain is attached, and the project URL 301s there. `vite.config.js` keeps Vite's default `base: '/'`; the production smoke job fails on any 404 before deploy. See "Base path and the custom domain" above. |
 | Dependabot parked at `dependabot.yml.example` | Weekly update PRs | This is a demo. I'd rather bump dependencies when there's a reason. Rename and uncomment to turn it on. |
@@ -142,7 +157,7 @@ Workflows: [ci.yml](.github/workflows/ci.yml) · [cd.yml](.github/workflows/cd.y
 - Expiry validation checks the format and that the month is 01–12. It doesn't check that the date is in the future, and there's no Luhn check. Fine for a demo, not for a store.
 - Component specs render committed markup fragments, so they can drift from the views. The unit view tests are the real check.
 - axe runs the WCAG A/AA rules only, not the best-practice set.
-- The next step I'd take is moving E2E and visual tests into their own repository and triggering them from this one with a reusable workflow, which is closer to how my last team split app and test repos.
+- The functional E2E suite now lives in [rio-ap/web-playground-automation](https://github.com/rio-ap/web-playground-automation). The next step would be moving the visual baselines there too and triggering that run from this repo with a reusable workflow, which is closer to how my last team split app and test repos.
 
 ## How this repo was built
 

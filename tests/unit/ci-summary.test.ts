@@ -157,6 +157,7 @@ const allPass = {
   smoke: { result: 'success' },
   'a11y-tests': { result: 'success' },
   coverage: { result: 'success' },
+  'e2e-gate': { result: 'success' },
 };
 
 const statsEntry = (id: string, over: Record<string, unknown> = {}) => ({
@@ -197,6 +198,7 @@ describe('buildSummary', () => {
       'Browser tests · chromium',
       'Browser tests · firefox',
       'Browser tests · webkit',
+      'E2E · PR gate',
       'Smoke',
       'Accessibility',
       'Coverage',
@@ -253,6 +255,67 @@ describe('buildSummary', () => {
     });
     expect(markdown).toContain('| Accessibility | ❌ Fail | 6/7 |');
     expect(markdown).toContain('- `a11y.spec.ts › home › no violations`');
+  });
+
+  it('renders the E2E row with a workflow link and test counts', () => {
+    const markdown = buildSummary({
+      jobs: { ...allPass, 'e2e-gate': { result: 'failure' } },
+      tests: {
+        e2e: statsEntry('e2e', {
+          result: 'failure',
+          total: 17,
+          passed: 15,
+          failed: 2,
+          skipped: 0,
+          failedTests: [
+            'playground_tsc.spec.ts › cart removes item',
+            'playground_mweb_tsc.spec.ts › checkout validates payment',
+          ],
+          runUrl: 'https://github.com/rio-ap/web-playground/actions/runs/1',
+        }),
+      },
+      commit: 'abc1234',
+    });
+    expect(markdown).toContain(
+      '| [E2E · PR gate](https://github.com/rio-ap/web-playground/actions/runs/1) | ❌ Fail | 15/17 |',
+    );
+    expect(markdown).toContain('- `playground_tsc.spec.ts › cart removes item`');
+  });
+
+  it('shows E2E as skipped when the gate selected nothing', () => {
+    const markdown = buildSummary({
+      jobs: { ...allPass, 'e2e-gate': { result: 'success' } },
+      tests: {
+        e2e: statsEntry('e2e', {
+          result: 'skipped',
+          total: 0,
+          passed: 0,
+          failed: 0,
+          skipped: 0,
+          failedTests: [],
+        }),
+      },
+      commit: 'abc1234',
+    });
+    expect(markdown).toContain('| E2E · PR gate | ⏭️ Skipped | — |');
+  });
+
+  it('fails the E2E row when stats say failure even if the job says success', () => {
+    const markdown = buildSummary({
+      jobs: { ...allPass, 'e2e-gate': { result: 'success' } },
+      tests: {
+        e2e: statsEntry('e2e', {
+          result: 'failure',
+          total: 0,
+          passed: 0,
+          failed: 0,
+          skipped: 0,
+          failedTests: [],
+        }),
+      },
+      commit: 'abc1234',
+    });
+    expect(markdown).toContain('| E2E · PR gate | ❌ Fail | — |');
   });
 
   it('uses per-browser browser stats results and counts when the browser job ran', () => {

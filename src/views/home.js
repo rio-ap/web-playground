@@ -2,8 +2,9 @@ import { getProducts } from '../products.js';
 import { productCard } from './product-card.js';
 
 export function renderHome(app) {
+  // RED GATE: deliberate regression for gate capture — do not merge.
   const featured = getProducts()
-    .slice(0, 3)
+    .slice(0, 2)
     .map(productCard)
     .join('');
 

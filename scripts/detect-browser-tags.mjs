@@ -46,10 +46,8 @@ const SHARED_PATTERNS = [
   /^playwright\.smoke\.config\.ts$/,
   /^package\.json$/,
   /^package-lock\.json$/,
-  /^tests\/e2e\/pages\//,
-  /^tests\/e2e\/helpers\//,
+  /^tests\/e2e\//,
   /^tests\/a11y\//,
-  /^tests\/e2e\/visual\//,
   /^scripts\//,
   /^\.github\//,
 ];

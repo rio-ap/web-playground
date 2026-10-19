@@ -94,11 +94,13 @@ flowchart TD
   DC --> E["component + visual<br/>chromium · firefox · webkit<br/>--grep module tags"]
   DC --> A["a11y audit<br/>chromium"]
   DC --> SM["production smoke<br/>build + vite preview"]
+  DC --> G["E2E gate<br/>@critical ∩ module tags<br/>chromium"]
   PR --> C["coverage<br/>per-file thresholds"]
   U --> TS["test-summary<br/>normalize reports →<br/>sticky PR comment"]
   E --> TS
   A --> TS
   SM --> TS
+  G --> TS
   C --> TS
 ```
 
@@ -106,7 +108,7 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-  M([Push to main]) --> C["coverage +<br/>per-file thresholds"] --> E["playwright<br/>3 browsers"] --> A["a11y<br/>chromium"] --> B["vite build"] --> R["copy coverage +<br/>Playwright reports into dist"] --> S["production smoke<br/>vite preview"] --> D["deploy to<br/>GitHub Pages"]
+  M([Push to main]) --> C["coverage +<br/>per-file thresholds"] --> E["playwright<br/>3 browsers"] --> A["a11y<br/>chromium"] --> B["vite build"] --> R["copy coverage +<br/>Playwright reports into dist"] --> S["production smoke<br/>vite preview"] --> V["E2E verify<br/>full suite"] --> D["deploy to<br/>GitHub Pages"]
 ```
 
 Pipeline details:
@@ -117,6 +119,8 @@ Pipeline details:
 - Each test job writes a `test-status-*` artifact through `scripts/parse-test-report.mjs`, including failed jobs. `test-summary` runs with `if: always()`, aggregates them with `scripts/ci-summary.mjs`, and writes the run summary plus a PR comment.
 - The comment step deletes the previous bot comment before posting, so there is one status comment per PR. Fork PRs skip it (read-only token); the run summary is still written.
 - CD writes run summaries too: build stage outcomes, then the deployed URL or failure from the deploy job.
+
+**E2E gate.** PRs also run the functional suite from `rio-ap/web-playground-automation`, selected by `@critical` ∩ changed module tags. The job checks out the private suite at `vars.E2E_REF` using `secrets.E2E_REPO_TOKEN`, builds and serves `dist` on `127.0.0.1:4173`, and adds one linked `E2E · PR gate` row to the sticky comment. CD runs the full suite before uploading the Pages artifact, so a red run cuts the deployment. Docs-only PRs record a green skipped row. Setup: tag the E2E repo, set the `E2E_REPO_TOKEN` secret (contents: read) and the `E2E_REF` variable (a tag), then require the `E2E gate` check on PRs to `main`. Fork PRs cannot run the gate while the E2E repo is private.
 
 What a PR runs:
 

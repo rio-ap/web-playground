@@ -52,6 +52,81 @@ jobs:
         id: smoke
         run: npm run test:smoke
 
+      - name: Verify E2E ref is pinned
+        env:
+          E2E_REF: ${{ vars.E2E_REF }}
+          E2E_REPO_TOKEN: ${{ secrets.E2E_REPO_TOKEN }}
+        run: |
+          if [ -z "$E2E_REF" ]; then
+            echo "::error title=Missing E2E_REF::Set the E2E_REF repository variable to a tag in rio-ap/web-playground-automation."
+            exit 1
+          fi
+          case "$E2E_REF" in
+            main|master|refs/heads/*)
+              echo "::error title=E2E_REF is not pinned::Use a tag (for example e2e-gate-v1), not a branch."
+              exit 1
+              ;;
+          esac
+          if [ -z "$E2E_REPO_TOKEN" ]; then
+            echo "::error title=Missing E2E_REPO_TOKEN::Create a fine-grained PAT with Contents: Read-only on rio-ap/web-playground-automation."
+            exit 1
+          fi
+
+      - name: Checkout E2E suite
+        uses: actions/checkout@v4
+        with:
+          repository: rio-ap/web-playground-automation
+          ref: refs/tags/${{ vars.E2E_REF }}
+          token: ${{ secrets.E2E_REPO_TOKEN }}
+          path: .e2e
+          persist-credentials: false
+
+      - name: Start preview for E2E verification
+        run: |
+          nohup npm run preview -- --host 127.0.0.1 --port 4173 --strictPort > /tmp/e2e-preview.log 2>&1 &
+          echo $! > /tmp/e2e-preview.pid
+          for attempt in {1..30}; do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/e2e-preview.log
+          exit 1
+
+      - name: Run E2E verification
+        id: e2e
+        uses: ./.e2e/.github/actions/run-e2e
+        with:
+          working-directory: .e2e
+          site-url: 'http://127.0.0.1:4173/'
+          test-env: fe_rc
+          projects: desktop,mweb
+          grep: ''
+          label: E2E · CD verify
+          result-id: e2e
+          browsers: chromium
+          install: 'true'
+          output-dir: .ci-status/tests
+
+      - name: Stop preview for E2E verification
+        if: always()
+        run: |
+          if [ -f /tmp/e2e-preview.pid ]; then
+            kill "$(cat /tmp/e2e-preview.pid)" 2>/dev/null || true
+          fi
+
+      - name: Upload E2E report
+        if: failure()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-cd-report
+          path: |
+            .e2e/playwright-report/
+            .e2e/test-results/
+          retention-days: 7
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
@@ -66,7 +141,8 @@ jobs:
              {"label":"Browser tests","result":"${{ steps.browser.outcome }}"},
              {"label":"Accessibility audits","result":"${{ steps.a11y.outcome }}"},
              {"label":"Build","result":"${{ steps.build.outcome }}"},
-             {"label":"Smoke test","result":"${{ steps.smoke.outcome }}"}]
+             {"label":"Smoke test","result":"${{ steps.smoke.outcome }}"},
+             {"label":"E2E verification","result":"${{ steps.e2e.outcome }}"}]
         run: printf '%s' "$STEPS_JSON" | node scripts/ci-summary.mjs --steps - --title "CD pipeline results" --commit "${{ github.sha }}" >> "$GITHUB_STEP_SUMMARY"
 
   deploy:

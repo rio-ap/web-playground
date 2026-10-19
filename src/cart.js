@@ -1,3 +1,4 @@
+// E2E gate slice validation: comment-only change, no behavior change.
 export function addItem(cart, product) {
   const existing = cart.find((item) => item.product.id === product.id);
   if (existing) {

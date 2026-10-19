@@ -33,8 +33,16 @@ runs:
       env:
         BASE_REF: ${{ inputs.base-ref }}
       run: |
+        set -euo pipefail
         BASE="$BASE_REF"
-        CHANGED=$(git diff --name-only "origin/${BASE}...HEAD" 2>/dev/null || echo "")
+        if [ -z "$BASE" ]; then
+          echo "::error title=Missing base ref::detect-changes received an empty base-ref."
+          exit 1
+        fi
+        if ! CHANGED=$(git diff --name-only "origin/${BASE}...HEAD"); then
+          echo "::error title=Change detection failed::git diff against origin/${BASE} failed; refusing to report an empty change set."
+          exit 1
+        fi
 
         # Per-module unit test triggers
         echo "products=$(echo "$CHANGED" | grep -qE '^src/products\.js$|^tests/unit/products\.test\.ts$' && echo true || echo false)" >> "$GITHUB_OUTPUT"

@@ -38,10 +38,11 @@ export function renderStatusTable(rows, { title = 'Test results', commit = '' } 
     counts[status.key] += 1;
     const testsCell = row.tests?.total ? `${row.tests.passed}/${row.tests.total}` : '—';
     if (row.tests?.total) totalTests += row.tests.total;
+    const label = row.url ? `[${row.label}](${row.url})` : row.label;
     lines.push(
       hasTests
-        ? `| ${row.label} | ${status.icon} ${status.label} | ${testsCell} |`
-        : `| ${row.label} | ${status.icon} ${status.label} |`,
+        ? `| ${label} | ${status.icon} ${status.label} | ${testsCell} |`
+        : `| ${label} | ${status.icon} ${status.label} |`,
     );
   }
   const parts = [
@@ -96,6 +97,7 @@ const toRowExtras = (stats) =>
     ? {
         tests: { passed: stats.passed, total: stats.total },
         failures: stats.reportMissing ? [] : (stats.failedTests ?? []),
+        url: stats.runUrl,
       }
     : {};
 
@@ -112,6 +114,19 @@ export function buildSummary({ jobs = {}, tests = {}, commit = '' } = {}) {
       browserResult === 'skipped' || browserResult === 'cancelled' ? browserResult : stats?.result;
     rows.push({ label: `Browser tests · ${browser}`, result, ...toRowExtras(stats) });
   }
+  const e2eStats = tests.e2e;
+  const e2eJobResult = jobs['e2e-gate']?.result;
+  const e2eResult =
+    e2eStats?.result === 'failure'
+      ? 'failure'
+      : e2eJobResult === 'success' && e2eStats?.result === 'skipped'
+        ? 'skipped'
+        : e2eJobResult;
+  rows.push({
+    label: 'E2E · PR gate',
+    result: e2eResult,
+    ...toRowExtras(e2eStats),
+  });
   for (const [id, label] of TAIL_ROWS) {
     rows.push({ label, result: jobs[id]?.result, ...toRowExtras(tests[id]) });
   }

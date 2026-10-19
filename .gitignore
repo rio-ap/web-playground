@@ -9,3 +9,4 @@ playwright-report/
 playwright-report-smoke/
 playwright-report-a11y/
 playwright/.cache/
+.e2e/

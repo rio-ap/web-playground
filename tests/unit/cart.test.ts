@@ -19,6 +19,15 @@ describe('addItem', () => {
     addItem(cart, { id: 1, name: 'A', price: 10 });
     expect(cart).toEqual([]);
   });
+
+  it('should keep other items unchanged when incrementing an existing product', () => {
+    const cart = [
+      { product: { id: 1, name: 'A', price: 10 }, quantity: 2 },
+      { product: { id: 2, name: 'B', price: 5 }, quantity: 1 },
+    ];
+    const result = addItem(cart, { id: 1, name: 'A', price: 10 });
+    expect(result[1]).toEqual({ product: { id: 2, name: 'B', price: 5 }, quantity: 1 });
+  });
 });
 
 describe('removeItem', () => {
@@ -53,6 +62,14 @@ describe('updateQuantity', () => {
 
   it('should remove item when quantity is negative', () => {
     expect(updateQuantity([{ product: { id: 1 }, quantity: 3 }], 1, -1)).toEqual([]);
+  });
+
+  it('should keep other items unchanged when updating quantity', () => {
+    const cart = [
+      { product: { id: 1, price: 10 }, quantity: 1 },
+      { product: { id: 2, price: 5 }, quantity: 2 },
+    ];
+    expect(updateQuantity(cart, 1, 4)[1]).toEqual({ product: { id: 2, price: 5 }, quantity: 2 });
   });
 });
 
